@@ -1,21 +1,21 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/navBar";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
 
-function App() {
-    const [count, setCount] = useState(0);
-
+const App = () => {
     return (
-        <div className="flex  h-screen mx-0 px-0 justify-center items-center ">
-            <button className="btn btn-active">Default</button>
-            <button className="btn btn-active btn-neutral">Neutral</button>
-            <button className="btn btn-active btn-primary">Primary</button>
-            <button className="btn btn-active btn-secondary">Secondary</button>
-            <button className="btn btn-active btn-accent">Accent</button>
-            <button className="btn btn-active btn-ghost">Ghost</button>
-            <button className="btn btn-active btn-link">Link</button>
-        </div>
+        <Router>
+            {/* Navbar is displayed on all pages */}
+            <Navbar />
+            <Routes>
+                {/* <Route path="/" element={<Home />} /> */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
+            </Routes>
+        </Router>
     );
-}
+};
 
 export default App;
