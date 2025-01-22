@@ -10,15 +10,15 @@ export default function SignUp() {
                 <form>
                     <div className="mb-4">
                         <label
-                            htmlFor="username"
+                            htmlFor="fullname"
                             className="block text-gray-700 text-sm font-medium mb-2"
                         >
-                            Username
+                            Full Name
                         </label>
                         <input
                             type="username"
                             id="username"
-                            placeholder="Enter your username"
+                            placeholder="Enter your full name"
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none bg-white text-black focus:ring-2 focus:ring-blue-500"
                         />
                     </div>

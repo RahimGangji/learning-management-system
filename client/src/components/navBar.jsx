@@ -19,7 +19,7 @@ const Navbar = () => {
                 />
                 <Button
                     text="SignUp"
-                    styleContainer={"font-bold"}
+                    styleContainer={"font-bold text-white "}
                     onClick={() => navigate("/signup")}
                 />
             </div>
