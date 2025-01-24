@@ -53,7 +53,7 @@ const Login = async (req, res) => {
         res.cookie("token", token, {
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000,
-            sameSite: "None",
+            sameSite: "strict",
         });
         const updatedUser = user.toObject();
         delete updatedUser.password;
