@@ -1,3 +1,6 @@
+@import "@fontsource/inter"; /* Use Inter */
+@import "@fontsource/poppins"; /* Use Poppins */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

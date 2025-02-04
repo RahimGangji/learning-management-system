@@ -70,7 +70,22 @@ const Login = async (req, res) => {
         });
     }
 };
+const Logout = async (req, res) => {
+    try {
+        res.clearCookie("token");
+        res.status(200).json({
+            success: true,
+            message: "User Logged Out Successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+};
 module.exports = {
     Register,
     Login,
+    Logout,
 };

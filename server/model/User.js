@@ -23,6 +23,11 @@ const UserSchema = new mongoose.Schema(
                 ref: "course",
             },
         ],
+        role: {
+            type: String,
+            enum: ["student", "admin"],
+            default: "student",
+        },
     },
     { versionKey: false }
 );

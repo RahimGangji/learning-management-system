@@ -27,10 +27,10 @@ export default function Login() {
             console.error(err);
             alert(err.data?.message || "Login failed");
         }
+        setFormData({ email: "", password: "" });
     };
     const authState = useSelector((state) => state.auth);
 
-    console.log("Auth State:", authState);
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="w-full max-w-sm bg-white p-6 rounded-lg shadow-lg">

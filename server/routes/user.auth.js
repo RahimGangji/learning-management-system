@@ -4,8 +4,9 @@ const User = require("../model/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const { Register, Login } = require("../controller/authController");
+const { Register, Login, Logout } = require("../controller/authController");
 
 router.post("/register", Register);
 router.post("/login", Login);
+router.get("/logout", Logout);
 module.exports = router;
