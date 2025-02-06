@@ -5,6 +5,8 @@ import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import { Provider } from "react-redux";
 import store from "./redux/app/store";
+import EditProfile from "./pages/EditProfile";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
     return (
@@ -16,6 +18,14 @@ const App = () => {
                     {/* <Route path="/" element={<Home />} /> */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<SignUp />} />
+                    <Route
+                        path="/edit-profile"
+                        element={
+                            <ProtectedRoute>
+                                <EditProfile />
+                            </ProtectedRoute>
+                        }
+                    />
                 </Routes>
             </Router>
         </Provider>
