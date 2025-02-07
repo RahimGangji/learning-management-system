@@ -1,18 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useGetProfileQuery } from "../redux/api/authApi";
 
 export default function EditProfile() {
+    const {
+        data: profileData,
+        error,
+        isLoading,
+    } = useGetProfileQuery(undefined, { credentials: true });
+
     const [isEditing, setIsEditing] = useState(false);
     const [tempProfile, setTempProfile] = useState(null);
-    const [profile, setProfile] = useState({
-        name: "AJohn Doe",
-        role: "Software Engineer",
-        email: "johndoe@example.com",
-        photo: "",
-    });
-    const [isLoading, setIsLoading] = useState(false);
+    const [profile, setProfile] = useState(null);
+
+    useEffect(() => {
+        if (profileData) {
+            setProfile(profileData); // Set profile data when fetched
+        }
+    }, [profileData]);
+
+    const handleEdit = () => {
+        setTempProfile(profile); // Initialize tempProfile with existing data
+        setIsEditing(true);
+    };
 
     const handleChange = (e) => {
-        setTempProfile({ ...tempProfile, [e.target.name]: e.target.value });
+        setTempProfile((prev) => ({
+            ...prev,
+            data: {
+                ...prev?.data,
+                [e.target.name]: e.target.value,
+            },
+        }));
     };
 
     const handlePhotoChange = (e) => {
@@ -20,41 +38,43 @@ export default function EditProfile() {
         if (file && file.type.startsWith("image/")) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setTempProfile({ ...tempProfile, photo: reader.result });
+                setTempProfile((prev) => ({
+                    ...prev,
+                    data: {
+                        ...prev?.data,
+                        profilePicture: reader.result,
+                    },
+                }));
             };
             reader.readAsDataURL(file);
         }
     };
 
-    console.log("temp profile", tempProfile);
-
     const handleSave = () => {
-        setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setProfile(tempProfile || profile);
-            // setTempProfile(null);
-            setIsEditing(false);
-            setIsLoading(false);
-        }, 1500);
-    };
-
-    const handleCancel = () => {
-        // setTempProfile(null);
+        setProfile(tempProfile || profile);
         setIsEditing(false);
     };
 
+    const handleCancel = () => {
+        setIsEditing(false);
+    };
+
+    if (isLoading) return <p>Loading profile...</p>;
+    if (error) return <p>Error loading profile</p>;
+    if (!profile) return <p>No profile found</p>;
+
     const currentProfile = tempProfile || profile;
-    const initial = currentProfile.name.charAt(0).toUpperCase();
+    const initial =
+        currentProfile?.data?.fullName?.charAt(0).toUpperCase() || "U";
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 flex items-center justify-center px-4">
             <div className="w-full max-w-md p-8 border rounded-2xl shadow-xl bg-white transition-all duration-300 hover:shadow-2xl">
                 <div className="flex flex-col items-center relative group">
                     <div className="relative">
-                        {currentProfile.photo ? (
+                        {currentProfile?.data?.profilePicture ? (
                             <img
-                                src={currentProfile.photo}
+                                src={currentProfile.data.profilePicture}
                                 alt="Profile"
                                 className="w-32 h-32 rounded-full mb-4 border-4 border-white shadow-lg"
                             />
@@ -104,15 +124,15 @@ export default function EditProfile() {
                         {isEditing ? (
                             <input
                                 type="text"
-                                name="name"
-                                value={currentProfile.name}
+                                name="fullName"
+                                value={currentProfile?.data?.fullName || ""}
                                 onChange={handleChange}
                                 className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                                 autoFocus
                             />
                         ) : (
-                            <p className="px-4 py-2 text-gray-600">
-                                {profile.name}
+                            <p className="px-4 py-2 text-black font-sans font-semibold">
+                                {currentProfile?.data?.fullName}
                             </p>
                         )}
                     </div>
@@ -121,8 +141,8 @@ export default function EditProfile() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Role
                         </label>
-                        <p className="px-4 py-2 text-gray-600 bg-gray-50 rounded-lg">
-                            {profile.role}
+                        <p className="px-4 py-2 text-black bg-gray-50 rounded-lg  font-sans font-semibold">
+                            {currentProfile?.data?.role}
                         </p>
                     </div>
 
@@ -130,8 +150,8 @@ export default function EditProfile() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Email
                         </label>
-                        <p className="px-4 py-2 text-gray-600 bg-gray-50 rounded-lg">
-                            {profile.email}
+                        <p className="px-4 py-2 text-black bg-gray-50 rounded-lg  font-sans font-semibold">
+                            {currentProfile?.data?.email}
                         </p>
                     </div>
                 </div>
@@ -141,35 +161,22 @@ export default function EditProfile() {
                         <>
                             <button
                                 onClick={handleCancel}
-                                className="flex-1 bg-[#fff] rounded-lg text-[#6d28d2] hover:bg-gray-100 border-2 border-[#6d28d2] hover:border-[#6d28d2] font-medium"
+                                className="flex-1 bg-white rounded-lg text-[#6d28d2] hover:bg-gray-100 border-2 border-[#6d28d2] hover:border-[#6d28d2] font-medium"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSave}
-                                disabled={isLoading}
-                                className={`w-1/2 text-white btn bg-[#6d28d2] border-0 hover:bg-[#7b09ed] px-6 py-0 my-0 text-[16px] ${
-                                    isLoading
-                                        ? "opacity-75 cursor-not-allowed"
-                                        : ""
-                                }`}
+                                className="w-1/2 text-white bg-[#6d28d2] border-0 hover:bg-[#7b09ed] px-6 py-2 text-[16px] rounded-lg"
                             >
                                 Save Changes
                             </button>
                         </>
                     ) : (
                         <button
-                            onClick={() => setIsEditing(true)}
-                            className="w-full  text-white btn bg-[#6d28d2] border-0 hover:bg-[#7b09ed] px-6 py-0 my-0 text-[16px]"
+                            onClick={handleEdit}
+                            className="w-full text-white bg-[#6d28d2] border-0 hover:bg-[#7b09ed] px-6 py-2 text-[16px] rounded-lg"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                            >
-                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                            </svg>
                             Edit Profile
                         </button>
                     )}

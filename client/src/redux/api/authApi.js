@@ -28,8 +28,19 @@ export const authApi = createApi({
                 credentials: "include",
             }),
         }),
+        getProfile: builder.query({
+            query: () => ({
+                url: "/profile",
+                method: "GET",
+                credentials: "include",
+            }),
+        }),
     }),
 });
 
-export const { useLoginMutation, useSignupMutation, useLogoutMutation } =
-    authApi;
+export const {
+    useLoginMutation,
+    useSignupMutation,
+    useLogoutMutation,
+    useGetProfileQuery,
+} = authApi;
