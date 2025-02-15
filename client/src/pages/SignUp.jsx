@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Button from "../components/Button";
 import { useSignupMutation } from "../redux/api/authApi";
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 export default function SignUp() {
     const [formData, setFormData] = useState({
@@ -8,9 +10,9 @@ export default function SignUp() {
         email: "",
         password: "",
     });
+    const [showPassword, setShowPassword] = useState(false);
     const [signup, { isLoading }] = useSignupMutation();
 
-    // Define the handleChange function
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -18,79 +20,120 @@ export default function SignUp() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const cleanedData = { ...formData };
-        delete cleanedData[""]; // Delete empty key if exists
+        delete cleanedData[""];
         try {
             const response = await signup(cleanedData).unwrap();
-            alert(response.message);
+
+            toast.success(response.message);
         } catch (err) {
-            alert(err.data?.message || "Signup failed");
+            toast.error(err.data?.message || "Signup failed");
         }
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen text-black bg-gray-100">
-            <div className="w-full max-w-sm bg-white p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-                    Sign up Your Account
+        <div className="flex items-center justify-center min-h-screen bg-white">
+            <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+                    Create Account
                 </h2>
+                <p className="text-center text-gray-600 mb-6">
+                    Please fill in your information
+                </p>
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
+                    <div className="mb-6">
                         <label
                             htmlFor="fullname"
                             className="block text-gray-700 text-sm font-medium mb-2"
                         >
                             Full Name
                         </label>
-                        <input
-                            type="text"
-                            id="fullname"
-                            name="fullName" // Ensure valid name
-                            placeholder="Enter your full name"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none bg-white text-black focus:ring-2 focus:ring-blue-500"
-                            value={formData.fullName}
-                            onChange={handleChange} // Use handleChange here
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                id="fullname"
+                                name="fullName"
+                                placeholder="Enter your full name"
+                                className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 placeholder-gray-400 bg-white"
+                                value={formData.fullName}
+                                onChange={handleChange}
+                            />
+                            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
+                        </div>
                     </div>
-                    <div className="mb-4">
+
+                    <div className="mb-6">
                         <label
                             htmlFor="email"
                             className="block text-gray-700 text-sm font-medium mb-2"
                         >
                             Email
                         </label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email" // Ensure valid name
-                            placeholder="Enter your email"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none bg-white text-black focus:ring-2 focus:ring-blue-500"
-                            value={formData.email}
-                            onChange={handleChange} // Use handleChange here
-                        />
+                        <div className="relative">
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="Enter your email"
+                                className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 placeholder-gray-400 bg-white"
+                                value={formData.email}
+                                onChange={handleChange}
+                            />
+                            <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
+                        </div>
                     </div>
+
                     <div className="mb-8">
                         <label
                             htmlFor="password"
-                            className="block  text-sm font-medium mb-2 text-gray-700"
+                            className="block text-sm font-medium mb-2 text-gray-700"
                         >
                             Password
                         </label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password" // Ensure valid name
-                            placeholder="Enter your password"
-                            className="w-full px-4 py-2 border text-black border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={formData.password}
-                            onChange={handleChange} // Use handleChange here
-                        />
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 placeholder-gray-400 bg-white"
+                                value={formData.password}
+                                onChange={handleChange}
+                            />
+                            <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
+                            <button
+                                type="button"
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? (
+                                    <FaEyeSlash className="text-black" />
+                                ) : (
+                                    <FaEye className="text-black" />
+                                )}
+                            </button>
+                        </div>
                     </div>
+
                     <Button
-                        text={isLoading ? "Registering..." : "Register"} // Show loading state
-                        styleContainer="w-full text-white py-2 rounded-md hover:bg-[#7b09ed] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        disabled={isLoading} // Disable button while submitting
+                        text={isLoading ? "Creating Account..." : "Sign Up"}
+                        styleContainer={`w-full text-white py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 bg-[#6d28d2] ${
+                            isLoading ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                        disabled={isLoading}
                     />
                 </form>
+
+                <div className="mt-6 text-center">
+                    <p className="text-gray-600">
+                        Already have an account?{" "}
+                        <a
+                            href="/login"
+                            className="text-[#6d28d2] hover:underline"
+                        >
+                            Login
+                        </a>
+                    </p>
+                </div>
             </div>
         </div>
     );

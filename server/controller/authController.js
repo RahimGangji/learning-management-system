@@ -13,6 +13,12 @@ const Register = async (req, res) => {
                 .status(400)
                 .json({ success: false, message: "User Already Exists" });
         }
+        if (!fullName || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Please fill all the fields",
+            });
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({
             fullName,

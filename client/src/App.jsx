@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast"; // Import Toaster
 import Navbar from "./components/navBar";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
@@ -11,11 +12,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 const App = () => {
     return (
         <Provider store={store}>
+            <Toaster position="bottom-right" reverseOrder={false} />{" "}
+            {/* Add this here */}
             <Router>
-                {/* Navbar is displayed on all pages */}
                 <Navbar />
                 <Routes>
-                    {/* <Route path="/" element={<Home />} /> */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<SignUp />} />
                     <Route

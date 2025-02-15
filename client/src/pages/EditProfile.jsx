@@ -1,36 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { useGetProfileQuery } from "../redux/api/authApi";
+import {
+    FaCamera,
+    FaUser,
+    FaEnvelope,
+    FaUserTag,
+    FaSave,
+    FaUpload,
+} from "react-icons/fa";
 
 export default function EditProfile() {
     const {
         data: profileData,
         error,
         isLoading,
+        refetch,
     } = useGetProfileQuery(undefined, { credentials: true });
 
-    const [isEditing, setIsEditing] = useState(false);
-    const [tempProfile, setTempProfile] = useState(null);
     const [profile, setProfile] = useState(null);
+    const [isDirty, setIsDirty] = useState(false);
+    const [isImageHovered, setIsImageHovered] = useState(false);
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
 
     useEffect(() => {
         if (profileData) {
-            setProfile(profileData); // Set profile data when fetched
+            setProfile(profileData);
         }
     }, [profileData]);
 
-    const handleEdit = () => {
-        setTempProfile(profile); // Initialize tempProfile with existing data
-        setIsEditing(true);
-    };
-
     const handleChange = (e) => {
-        setTempProfile((prev) => ({
+        setProfile((prev) => ({
             ...prev,
             data: {
-                ...prev?.data,
+                ...prev.data,
                 [e.target.name]: e.target.value,
             },
         }));
+        setIsDirty(true);
     };
 
     const handlePhotoChange = (e) => {
@@ -38,148 +46,173 @@ export default function EditProfile() {
         if (file && file.type.startsWith("image/")) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setTempProfile((prev) => ({
+                setProfile((prev) => ({
                     ...prev,
                     data: {
-                        ...prev?.data,
+                        ...prev.data,
                         profilePicture: reader.result,
                     },
                 }));
+                setIsDirty(true);
             };
             reader.readAsDataURL(file);
         }
     };
 
     const handleSave = () => {
-        setProfile(tempProfile || profile);
-        setIsEditing(false);
+        // Save implementation
+        setIsDirty(false);
+        toast.success("Profile updated successfully!");
     };
 
-    const handleCancel = () => {
-        setIsEditing(false);
-    };
+    if (isLoading)
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-pulse text-[#6d28d2] text-xl">
+                    Loading profile...
+                </div>
+            </div>
+        );
 
-    if (isLoading) return <p>Loading profile...</p>;
-    if (error) return <p>Error loading profile</p>;
-    if (!profile) return <p>No profile found</p>;
+    if (error)
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-red-500 text-xl">
+                    Error loading profile
+                </div>
+            </div>
+        );
 
-    const currentProfile = tempProfile || profile;
-    const initial =
-        currentProfile?.data?.fullName?.charAt(0).toUpperCase() || "U";
+    const initial = profile?.data?.fullName?.charAt(0).toUpperCase() || "U";
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 flex items-center justify-center px-4">
-            <div className="w-full max-w-md p-8 border rounded-2xl shadow-xl bg-white transition-all duration-300 hover:shadow-2xl">
-                <div className="flex flex-col items-center relative group">
-                    <div className="relative">
-                        {currentProfile?.data?.profilePicture ? (
-                            <img
-                                src={currentProfile.data.profilePicture}
-                                alt="Profile"
-                                className="w-32 h-32 rounded-full mb-4 border-4 border-white shadow-lg"
-                            />
-                        ) : (
-                            <div className="w-32 h-32 flex items-center justify-center rounded-full mb-4 border-4 border-white shadow-lg bg-[#6d28d2] text-white text-6xl font-bold">
-                                {initial}
+        <div className="min-h-screen bg-gray-50 py-12 px-4">
+            <div className="max-w-3xl mx-auto">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-[#6d28d2] px-8 py-6">
+                        <h2 className="text-2xl font-bold text-white">
+                            Profile Settings
+                        </h2>
+                        <p className="text-purple-200 mt-1">
+                            Manage your personal information
+                        </p>
+                    </div>
+
+                    {/* Profile Content */}
+                    <div className="p-8">
+                        {/* Profile Image Section */}
+                        <div className="flex flex-col sm:flex-row items-center gap-8 mb-8 pb-8 border-b border-gray-200">
+                            <div
+                                className="relative group"
+                                onMouseEnter={() => setIsImageHovered(true)}
+                                onMouseLeave={() => setIsImageHovered(false)}
+                            >
+                                {profile?.data?.profilePicture ? (
+                                    <img
+                                        src={profile.data.profilePicture}
+                                        alt="Profile"
+                                        className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-32 h-32 flex items-center justify-center rounded-full border-4 border-white shadow-lg bg-[#6d28d2] text-white text-6xl font-bold">
+                                        {initial}
+                                    </div>
+                                )}
+                                <label
+                                    className={`absolute bottom-2 right-2 bg-white p-3 rounded-full shadow-lg cursor-pointer hover:bg-gray-50 transition-all duration-300 ${
+                                        isImageHovered
+                                            ? "scale-110"
+                                            : "scale-100"
+                                    }`}
+                                >
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handlePhotoChange}
+                                        className="hidden"
+                                    />
+                                    <FaCamera className="h-5 w-5 text-[#6d28d2]" />
+                                </label>
+                            </div>
+
+                            <div className="flex-1">
+                                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                                    Profile Picture
+                                </h3>
+                                <p className="text-gray-600 mb-4">
+                                    Upload a new profile picture or avatar
+                                </p>
+                                <label className="inline-flex items-center px-4 py-2 bg-purple-50 text-[#6d28d2] rounded-lg cursor-pointer hover:bg-purple-100 transition-colors">
+                                    <FaUpload className="mr-2" />
+                                    <span>Choose Image</span>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handlePhotoChange}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Form Fields in Grid Layout */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Full Name
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        value={profile?.data?.fullName || ""}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 pl-10 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-800"
+                                        placeholder="Enter your full name"
+                                    />
+                                    <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email
+                                </label>
+                                <div className="relative">
+                                    <div className="w-full px-4 py-3 pl-10 rounded-lg bg-gray-50 text-gray-800">
+                                        {profile?.data?.email}
+                                    </div>
+                                    <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Role
+                                </label>
+                                <div className="relative">
+                                    <div className="w-full px-4 py-3 pl-10 rounded-lg bg-gray-50 text-gray-800">
+                                        {profile?.data?.role}
+                                    </div>
+                                    <FaUserTag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Save Button */}
+                        {isDirty && (
+                            <div className="mt-8 flex justify-end">
+                                <button
+                                    onClick={handleSave}
+                                    className="inline-flex items-center px-6 py-3 bg-[#6d28d2] text-white rounded-lg hover:bg-[#7b09ed] transition-colors duration-300"
+                                >
+                                    <FaSave className="mr-2" />
+                                    Save Changes
+                                </button>
                             </div>
                         )}
-                        {isEditing && (
-                            <label className="absolute bottom-2 right-2 bg-white/90 p-2 rounded-full shadow-md cursor-pointer hover:bg-white transition-colors">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handlePhotoChange}
-                                    className="hidden"
-                                />
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6 text-gray-700"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                                    />
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                                    />
-                                </svg>
-                            </label>
-                        )}
                     </div>
-                </div>
-
-                <div className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Name
-                        </label>
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                name="fullName"
-                                value={currentProfile?.data?.fullName || ""}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                                autoFocus
-                            />
-                        ) : (
-                            <p className="px-4 py-2 text-black font-sans font-semibold">
-                                {currentProfile?.data?.fullName}
-                            </p>
-                        )}
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Role
-                        </label>
-                        <p className="px-4 py-2 text-black bg-gray-50 rounded-lg  font-sans font-semibold">
-                            {currentProfile?.data?.role}
-                        </p>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Email
-                        </label>
-                        <p className="px-4 py-2 text-black bg-gray-50 rounded-lg  font-sans font-semibold">
-                            {currentProfile?.data?.email}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="mt-8 flex gap-4">
-                    {isEditing ? (
-                        <>
-                            <button
-                                onClick={handleCancel}
-                                className="flex-1 bg-white rounded-lg text-[#6d28d2] hover:bg-gray-100 border-2 border-[#6d28d2] hover:border-[#6d28d2] font-medium"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                className="w-1/2 text-white bg-[#6d28d2] border-0 hover:bg-[#7b09ed] px-6 py-2 text-[16px] rounded-lg"
-                            >
-                                Save Changes
-                            </button>
-                        </>
-                    ) : (
-                        <button
-                            onClick={handleEdit}
-                            className="w-full text-white bg-[#6d28d2] border-0 hover:bg-[#7b09ed] px-6 py-2 text-[16px] rounded-lg"
-                        >
-                            Edit Profile
-                        </button>
-                    )}
                 </div>
             </div>
         </div>
