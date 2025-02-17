@@ -3,6 +3,7 @@ const express = require("express");
 const User = require("../model/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("../utils/cloudinary");
 
 const Register = async (req, res) => {
     try {
@@ -111,9 +112,57 @@ const getProfile = async (req, res) => {
         });
     }
 };
+const editProfile = async (req, res) => {
+    const { fullName } = req.body;
+    const file = req.file;
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User Not Found",
+            });
+        }
+        if (fullName) {
+            user.fullName = fullName;
+        }
+        if (file) {
+            try {
+                if (user.profilePicture) {
+                    const publicId = user.profilePicture
+                        .split("/")
+                        .pop()
+                        .split(".")[0];
+                    await cloudinary.uploader.destroy(
+                        `user_profiles/${publicId}`
+                    );
+                }
+                const result = await cloudinary.uploader.upload(file.path);
+                user.profilePicture = result.secure_url;
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    message: "Error While Uploading Image",
+                });
+            }
+        }
+        await user.save();
+        res.status(200).json({
+            success: true,
+            message: "User Profile Updated Successfully",
+            data: user,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+};
 module.exports = {
     Register,
     Login,
     Logout,
     getProfile,
+    editProfile,
 };
