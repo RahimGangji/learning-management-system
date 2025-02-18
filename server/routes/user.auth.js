@@ -21,7 +21,7 @@ router.get("/profile", Authentication, getProfile);
 router.patch(
     "/updateProfile",
     Authentication,
-    upload.single("image"),
+    upload.single("profilePicture"),
     editProfile
 );
 module.exports = router;

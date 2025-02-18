@@ -5,6 +5,8 @@ const databaseConnection = require("./databaseConnection");
 const UserAuth = require("./routes/user.auth");
 const app = express();
 const cookieParser = require("cookie-parser");
+const multer = require("multer");
+const upload = multer();
 databaseConnection();
 app.use(
     cors({
@@ -15,6 +17,7 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.json());
+// app.use(upload.array());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", UserAuth);
 app.listen(process.env.PORT, () => console.log(`Server Has Been Started`));

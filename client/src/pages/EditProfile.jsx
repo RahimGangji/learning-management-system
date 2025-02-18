@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { useGetProfileQuery } from "../redux/api/authApi";
+import {
+    useGetProfileQuery,
+    useEditProfileMutation,
+} from "../redux/api/authApi";
+import { setCredentials } from "../redux/features/auth/authSlice";
+import { useDispatch } from "react-redux";
 import {
     FaCamera,
     FaUser,
     FaEnvelope,
     FaUserTag,
     FaSave,
-    FaUpload,
 } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 export default function EditProfile() {
+    const dispatch = useDispatch();
     const {
         data: profileData,
         error,
@@ -17,9 +23,11 @@ export default function EditProfile() {
         refetch,
     } = useGetProfileQuery(undefined, { credentials: true });
 
+    const [editProfile, { isLoading: isSaving }] = useEditProfileMutation();
     const [profile, setProfile] = useState(null);
     const [isDirty, setIsDirty] = useState(false);
     const [isImageHovered, setIsImageHovered] = useState(false);
+
     useEffect(() => {
         refetch();
     }, [refetch]);
@@ -29,6 +37,12 @@ export default function EditProfile() {
             setProfile(profileData);
         }
     }, [profileData]);
+
+    useEffect(() => {
+        if (error) {
+            toast.error(error?.data?.message || "Error While Loading Profile");
+        }
+    }, [error]);
 
     const handleChange = (e) => {
         setProfile((prev) => ({
@@ -44,44 +58,47 @@ export default function EditProfile() {
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file && file.type.startsWith("image/")) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfile((prev) => ({
-                    ...prev,
-                    data: {
-                        ...prev.data,
-                        profilePicture: reader.result,
-                    },
-                }));
-                setIsDirty(true);
-            };
-            reader.readAsDataURL(file);
+            setProfile((prev) => ({
+                ...prev,
+                data: {
+                    ...prev.data,
+                    profilePicture: URL.createObjectURL(file), // Preview
+                    imageFile: file, // Store actual file
+                },
+            }));
+            setIsDirty(true);
         }
     };
 
-    const handleSave = () => {
-        // Save implementation
-        setIsDirty(false);
-        toast.success("Profile updated successfully!");
+    const handleSave = async () => {
+        try {
+            const formData = new FormData();
+            formData.append("fullName", profile.data.fullName);
+
+            if (profile.data.imageFile) {
+                formData.append("profilePicture", profile.data.imageFile);
+            }
+
+            const response = await editProfile(formData).unwrap();
+            toast.success("Profile updated successfully!");
+            refetch();
+            dispatch(setCredentials({ user: response.data }));
+            setIsDirty(false);
+        } catch (error) {
+            toast.error("Failed to update profile");
+        }
     };
 
+    // **Loading State**
     if (isLoading)
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="animate-pulse text-[#6d28d2] text-xl">
-                    Loading profile...
-                </div>
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <span className="loading loading-spinner loading-lg"></span>
             </div>
         );
 
-    if (error)
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-red-500 text-xl">
-                    Error loading profile
-                </div>
-            </div>
-        );
+    // **Error State** (Handled via `useEffect` so UI remains accessible)
+    if (error) return <div className="min-h-screen bg-white"></div>;
 
     const initial = profile?.data?.fullName?.charAt(0).toUpperCase() || "U";
 
@@ -135,29 +152,11 @@ export default function EditProfile() {
                                     <FaCamera className="h-5 w-5 text-[#6d28d2]" />
                                 </label>
                             </div>
-
-                            <div className="flex-1">
-                                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                    Profile Picture
-                                </h3>
-                                <p className="text-gray-600 mb-4">
-                                    Upload a new profile picture or avatar
-                                </p>
-                                <label className="inline-flex items-center px-4 py-2 bg-purple-50 text-[#6d28d2] rounded-lg cursor-pointer hover:bg-purple-100 transition-colors">
-                                    <FaUpload className="mr-2" />
-                                    <span>Choose Image</span>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handlePhotoChange}
-                                        className="hidden"
-                                    />
-                                </label>
-                            </div>
                         </div>
 
-                        {/* Form Fields in Grid Layout */}
+                        {/* Form Fields */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {/* Full Name */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Full Name
@@ -175,6 +174,7 @@ export default function EditProfile() {
                                 </div>
                             </div>
 
+                            {/* Email */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Email
@@ -187,6 +187,7 @@ export default function EditProfile() {
                                 </div>
                             </div>
 
+                            {/* Role */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Role
@@ -205,10 +206,21 @@ export default function EditProfile() {
                             <div className="mt-8 flex justify-end">
                                 <button
                                     onClick={handleSave}
-                                    className="inline-flex items-center px-6 py-3 bg-[#6d28d2] text-white rounded-lg hover:bg-[#7b09ed] transition-colors duration-300"
+                                    disabled={isSaving}
+                                    className={`inline-flex items-center px-6 py-3 rounded-lg transition-colors duration-300 ${
+                                        isSaving
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-[#6d28d2] hover:bg-[#7b09ed] text-white"
+                                    }`}
                                 >
-                                    <FaSave className="mr-2" />
-                                    Save Changes
+                                    {isSaving ? (
+                                        <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : (
+                                        <>
+                                            <FaSave className="mr-2" />
+                                            Save Changes
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         )}

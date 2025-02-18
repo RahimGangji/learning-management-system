@@ -35,6 +35,14 @@ export const authApi = createApi({
                 credentials: "include",
             }),
         }),
+        editProfile: builder.mutation({
+            query: (data) => ({
+                url: "/updateProfile",
+                method: "PATCH",
+                body: data,
+                credentials: "include",
+            }),
+        }),
     }),
 });
 
@@ -43,4 +51,5 @@ export const {
     useSignupMutation,
     useLogoutMutation,
     useGetProfileQuery,
+    useEditProfileMutation,
 } = authApi;
