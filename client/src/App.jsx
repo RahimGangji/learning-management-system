@@ -8,6 +8,7 @@ import { Provider } from "react-redux";
 import store from "./redux/app/store";
 import EditProfile from "./pages/EditProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
+import HomePage from "./pages/HomePage";
 
 const App = () => {
     return (
@@ -17,6 +18,7 @@ const App = () => {
             <Router>
                 <Navbar />
                 <Routes>
+                    <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<SignUp />} />
                     <Route
