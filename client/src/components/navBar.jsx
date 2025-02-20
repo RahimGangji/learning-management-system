@@ -99,6 +99,12 @@ const Navbar = () => {
                                 >
                                     Enrolled Courses
                                 </li>
+
+                                {user.role == "admin" && (
+                                    <li className="px-5 py-3 hover:bg-gray-200 cursor-pointer text-sm font-medium transition-all">
+                                        Dashboard
+                                    </li>
+                                )}
                                 <li
                                     className="px-5 py-3 hover:bg-red-500 text-red-600 hover:text-white cursor-pointer text-sm font-medium transition-all"
                                     onClick={handleLogout}
@@ -118,7 +124,7 @@ const Navbar = () => {
                     />
                     <Button
                         text="Sign Up"
-                        styleContainer="bg-indigo-600 font-bold text-white px-5 py-2 rounded-md shadow-md hover:bg-indigo-700 transition-all"
+                        styleContainer=" font-bold text-white px-5 py-2 rounded-md shadow-md transition-all"
                         onClick={() => navigate("/signup")}
                     />
                 </div>
