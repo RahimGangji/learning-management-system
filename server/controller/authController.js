@@ -13,7 +13,7 @@ const Register = async (req, res) => {
             return new ApiError(res, 400, "User Already Exists");
         }
         if (!fullName || !email || !password) {
-            return ApiError(res, 400, "Please fill all the fields");
+            return new ApiError(res, 400, "Please fill all the fields");
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({
@@ -95,7 +95,7 @@ const editProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
-            return ApiError(res, 404, "User Not Found");
+            return new ApiError(res, 404, "User Not Found");
         }
 
         if (fullName) {

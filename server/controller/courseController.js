@@ -60,7 +60,7 @@ const deleteCourseById = async (req, res) => {
     try {
         const course = await Course.findById(req.params.id);
         if (!course) {
-            return ApiError(res, 404, "Course not found");
+            return new ApiError(res, 404, "Course not found");
         }
 
         if (course.image) {
