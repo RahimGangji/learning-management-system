@@ -2,21 +2,18 @@ const User = require("../model/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cloudinary = require("../utils/cloudinary");
+const ApiResponse = require("../utils/ApiResponse");
+const ApiError = require("../utils/ApiError");
 
 const Register = async (req, res) => {
     try {
         const { fullName, email, password } = req.body;
         const user = await User.findOne({ email });
         if (user) {
-            return res
-                .status(400)
-                .json({ success: false, message: "User Already Exists" });
+            return new ApiError(res, 400, "User Already Exists");
         }
         if (!fullName || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "Please fill all the fields",
-            });
+            return ApiError(res, 400, "Please fill all the fields");
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({
@@ -26,17 +23,15 @@ const Register = async (req, res) => {
         });
         const userWithoutPassword = newUser.toObject();
         delete userWithoutPassword.password;
-        return res.status(201).json({
-            success: true,
-            message: "User Registered Successfully",
-            data: userWithoutPassword,
-        });
+
+        return new ApiResponse(
+            res,
+            201,
+            userWithoutPassword,
+            "User Registered Successfully"
+        );
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-        });
+        return new ApiError(res, 500, "Internal Server Error");
     }
 };
 const Login = async (req, res) => {
@@ -44,15 +39,11 @@ const Login = async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
-            return res
-                .status(400)
-                .json({ success: false, message: "Invalid Credentials" });
+            return new ApiError(res, 400, "Invalid Credentials");
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res
-                .status(400)
-                .json({ success: false, message: "Invalid Credentials" });
+            return new ApiError(res, 400, "Invalid Credentials");
         }
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         res.cookie("token", token, {
@@ -62,52 +53,39 @@ const Login = async (req, res) => {
         });
         const updatedUser = user.toObject();
         delete updatedUser.password;
-        return res.status(200).json({
-            success: true,
-            message: "User Logged In Successfully",
-            user: updatedUser,
-        });
+        return new ApiResponse(
+            res,
+            200,
+            updatedUser,
+            "User Logged In Successfully"
+        );
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-        });
+        return new ApiError(res, 500, "Internal Server Error");
     }
 };
 const Logout = async (req, res) => {
     try {
         res.clearCookie("token");
-        res.status(200).json({
-            success: true,
-            message: "User Logged Out Successfully",
-        });
+
+        return new ApiResponse(res, 200, null, "User Logged Out Successfully");
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-        });
+        return new ApiError(res, 500, "Internal Server Error");
     }
 };
 const getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("-password");
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User Not Found",
-            });
+            return new ApiError(res, 404, "User Not Found");
         }
-        res.status(200).json({
-            success: true,
-            message: "User Profile Fetched Successfully",
-            data: user,
-        });
+        return new ApiResponse(
+            res,
+            200,
+            user,
+            "User Profile Fetched Successfully"
+        );
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-        });
+        return new ApiError(res, 500, "Internal Server Error");
     }
 };
 const editProfile = async (req, res) => {
@@ -117,10 +95,7 @@ const editProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User Not Found",
-            });
+            return ApiError(res, 404, "User Not Found");
         }
 
         if (fullName) {
@@ -142,27 +117,20 @@ const editProfile = async (req, res) => {
                 // Use the URL provided by CloudinaryStorage (already uploaded to user_profiles)
                 user.profilePicture = req.file.path;
             } catch (error) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Error while updating image",
-                    error: error.message,
-                });
+                return new ApiError(res, 500, "Error while updating image");
             }
         }
 
         await user.save();
 
-        res.status(200).json({
-            success: true,
-            message: "User Profile Updated Successfully",
-            data: user,
-        });
+        return new ApiResponse(
+            res,
+            200,
+            user,
+            "User Profile Updated Successfully"
+        );
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-            error: error.message,
-        });
+        return new ApiError(res, 500, "Internal Server Error");
     }
 };
 module.exports = {

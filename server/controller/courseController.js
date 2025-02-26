@@ -1,55 +1,45 @@
 const Course = require("../model/Course");
+const ApiError = require("../utils/ApiError");
+const ApiResponse = require("../utils/ApiResponse");
 const cloudinary = require("../utils/cloudinary");
 
 const getAllCoursesAdmin = async (req, res) => {
     try {
         const courses = await Course.find();
-        res.status(200).json({
-            success: true,
-            data: courses,
-            message: "All courses fetched successfully",
-        });
+
+        return new ApiResponse(
+            res,
+            200,
+            courses,
+            "All courses fetched successfully"
+        );
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error While Fetching courses",
-        });
+        return new ApiError(res, 500, "Error While Fetching courses");
     }
 };
 const getAllPublishedCourses = async (req, res) => {
     try {
         const courses = await Course.find({ isPublished: true });
-        res.status(200).json({
-            success: true,
-            data: courses,
-            message: "All published courses fetched successfully",
-        });
+
+        return new ApiResponse(
+            res,
+            200,
+            courses,
+            "All published courses fetched successfully"
+        );
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error While Fetching published courses",
-        });
+        return new ApiError(res, 500, "Error While Fetching courses");
     }
 };
 const getCourseByIdAdmin = async (req, res) => {
     try {
         const course = await Course.findById(req.params.id);
         if (!course) {
-            return res.status(404).json({
-                success: false,
-                message: "Course not found",
-            });
+            return new ApiError(res, 404, "Course not found");
         }
-        res.status(200).json({
-            success: true,
-            data: course,
-            message: "Course fetched successfully",
-        });
+        return new ApiResponse(res, 200, course, "Course fetched successfully");
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error While Fetching course",
-        });
+        return new ApiError(res, 500, "Error While Fetching course");
     }
 };
 const getCourseByIdPublished = async (req, res) => {
@@ -59,32 +49,18 @@ const getCourseByIdPublished = async (req, res) => {
             isPublished: true,
         });
         if (!course) {
-            return res.status(404).json({
-                success: false,
-                message: "Course not found or not published",
-            });
+            return new ApiError(res, 404, "Course not found");
         }
-
-        res.status(200).json({
-            success: true,
-            data: course,
-            message: "Course fetched successfully",
-        });
+        return new ApiResponse(res, 200, course, "Course fetched successfully");
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error While Fetching course",
-        });
+        return new ApiError(res, 500, "Internal Server Error");
     }
 };
 const deleteCourseById = async (req, res) => {
     try {
         const course = await Course.findById(req.params.id);
         if (!course) {
-            return res.status(404).json({
-                success: false,
-                message: "Course not found",
-            });
+            return ApiError(res, 404, "Course not found");
         }
 
         if (course.image) {
@@ -94,38 +70,23 @@ const deleteCourseById = async (req, res) => {
 
         await Course.findByIdAndDelete(req.params.id);
 
-        res.status(200).json({
-            success: true,
-            message: "Course deleted successfully",
-        });
+        return new ApiResponse(res, 200, null, "Course deleted successfully");
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error While Deleting Course",
-        });
+        return new ApiError(res, 500, "Internal Server Error");
     }
 };
 const createCourse = async (req, res) => {
     try {
-        console.log("Request Body:", req.body);
-        console.log("Request File:", req.file);
-
         const { title, description, price, isPublished } = req.body;
         const file = req.file;
 
         if (!title || !description || !price || !file) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required",
-            });
+            return new ApiError(res, 400, "All fields are required");
         }
 
         const parsedPrice = parseFloat(price);
         if (isNaN(parsedPrice)) {
-            return res.status(400).json({
-                success: false,
-                message: "Price must be a valid number",
-            });
+            return new ApiError(res, 400, "Price must be a valid number");
         }
 
         const imageUrl = req.file.path; // Use the URL from CloudinaryStorage
@@ -140,18 +101,9 @@ const createCourse = async (req, res) => {
 
         await course.save();
 
-        res.status(201).json({
-            success: true,
-            message: "Course created successfully",
-            data: course,
-        });
+        return new ApiResponse(res, 201, course, "Course created successfully");
     } catch (error) {
-        console.error("Create Course Error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-            error: error.message,
-        });
+        return new ApiError(res, 500, "Internal Server Error");
     }
 };
 const editCourse = async (req, res) => {
@@ -161,10 +113,7 @@ const editCourse = async (req, res) => {
     try {
         const course = await Course.findById(req.params.id);
         if (!course) {
-            return res.status(404).json({
-                success: false,
-                message: "Course not found",
-            });
+            return new ApiError(res, 404, "Course not found");
         }
 
         if (title) course.title = title;
@@ -172,10 +121,7 @@ const editCourse = async (req, res) => {
         if (price) {
             const parsedPrice = parseFloat(price);
             if (isNaN(parsedPrice)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Price must be a valid number",
-                });
+                return new ApiError(res, 400, "Price must be a valid number");
             }
             course.price = parsedPrice;
         }
@@ -195,27 +141,15 @@ const editCourse = async (req, res) => {
 
                 course.image = req.file.path;
             } catch (error) {
-                return res.status(500).json({
-                    success: false,
-                    message: "Error while updating image",
-                    error: error.message,
-                });
+                return new ApiError(res, 500, "Error while updating image");
             }
         }
 
         await course.save();
 
-        res.status(200).json({
-            success: true,
-            message: "Course updated successfully",
-            data: course,
-        });
+        return new ApiResponse(res, 200, course, "Course updated successfully");
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-            error: error.message,
-        });
+        return new ApiError(res, 500, "Internal Server");
     }
 };
 module.exports = {
