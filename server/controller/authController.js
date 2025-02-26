@@ -113,6 +113,7 @@ const getProfile = async (req, res) => {
 const editProfile = async (req, res) => {
     const { fullName } = req.body;
     const file = req.file;
+
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
@@ -121,30 +122,36 @@ const editProfile = async (req, res) => {
                 message: "User Not Found",
             });
         }
+
         if (fullName) {
             user.fullName = fullName;
         }
+
         if (file) {
             try {
+                // Delete the previous profile picture if it exists
                 if (user.profilePicture) {
-                    const publicId = user.profilePicture
+                    const previousPublicId = user.profilePicture
                         .split("/")
-                        .pop()
-                        .split(".")[0];
-                    await cloudinary.uploader.destroy(
-                        `user_profiles/${publicId}`
-                    );
+                        .slice(-1)[0] // Get the last part of the URL
+                        .split(".")[0]; // Remove the extension
+                    const fullPublicId = `user_profiles/${previousPublicId}`;
+                    await cloudinary.uploader.destroy(fullPublicId);
                 }
-                const result = await cloudinary.uploader.upload(file.path);
-                user.profilePicture = result.secure_url;
+
+                // Use the URL provided by CloudinaryStorage (already uploaded to user_profiles)
+                user.profilePicture = req.file.path;
             } catch (error) {
                 return res.status(500).json({
                     success: false,
-                    message: "Error While Uploading Image",
+                    message: "Error while updating image",
+                    error: error.message,
                 });
             }
         }
+
         await user.save();
+
         res.status(200).json({
             success: true,
             message: "User Profile Updated Successfully",
@@ -154,6 +161,7 @@ const editProfile = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Internal Server Error",
+            error: error.message,
         });
     }
 };

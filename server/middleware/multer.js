@@ -4,13 +4,23 @@ const cloudinary = require("../utils/cloudinary");
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: {
-        folder: "user_profiles",
-        format: async (req, file) => "png",
-        public_id: (req, file) => `user_${req.user.id}_${Date.now()}`,
+    params: (req, file) => {
+        let folder = "user_profiles";
+        let publicIdPrefix = `user_${req.user?.id || Date.now()}`;
+
+        if (req.originalUrl.includes("/api/courses")) {
+            folder = "course_images";
+            publicIdPrefix = `course_${req.params.id || Date.now()}`;
+        }
+
+        return {
+            folder,
+            format: req.originalUrl.includes("/api/courses") ? "jpg" : "png", // Synchronous
+            public_id: `${publicIdPrefix}_${Date.now()}`,
+        };
     },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage }); // No limits applied
 
 module.exports = upload;
