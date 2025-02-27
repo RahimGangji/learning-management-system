@@ -5,12 +5,23 @@ const cloudinary = require("../utils/cloudinary");
 
 const getAllCoursesAdmin = async (req, res) => {
     try {
-        const courses = await Course.find();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const totalCourses = await Course.countDocuments();
+        const courses = await Course.find().skip(skip).limit(limit);
+        const pagination = {
+            currentPage: page,
+            totalPages: Math.ceil(totalCourses / limit),
+            totalCourses: totalCourses,
+            hasNextPage: page < Math.ceil(totalCourses / limit),
+            hasPrevPage: page > 1,
+        };
 
         return new ApiResponse(
             res,
             200,
-            courses,
+            { courses, pagination },
             "All courses fetched successfully"
         );
     } catch (error) {

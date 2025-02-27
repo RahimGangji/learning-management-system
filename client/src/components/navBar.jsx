@@ -14,7 +14,6 @@ const Navbar = () => {
     const [logoutApi] = useLogoutMutation();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (
@@ -76,7 +75,7 @@ const Navbar = () => {
                         <div className="absolute top-full right-0 mt-3 w-52 bg-white shadow-lg rounded-lg overflow-hidden z-50 border border-gray-200">
                             <div className="px-5 py-3 border-b bg-gray-100">
                                 <p className="text-base font-semibold text-gray-700 truncate">
-                                    {user.email}
+                                    {user?.email}
                                 </p>
                             </div>
 
@@ -100,8 +99,14 @@ const Navbar = () => {
                                     Enrolled Courses
                                 </li>
 
-                                {user.role == "admin" && (
-                                    <li className="px-5 py-3 hover:bg-gray-200 cursor-pointer text-sm font-medium transition-all">
+                                {user?.role == "admin" && (
+                                    <li
+                                        className="px-5 py-3 hover:bg-gray-200 cursor-pointer text-sm font-medium transition-all"
+                                        onClick={() => {
+                                            navigate("/dashboard");
+                                            setDropdownOpen(false);
+                                        }}
+                                    >
                                         Dashboard
                                     </li>
                                 )}

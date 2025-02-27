@@ -25,7 +25,8 @@ export default function Login() {
         e.preventDefault();
         try {
             const response = await login(formData).unwrap();
-            dispatch(setCredentials({ user: response.user }));
+            console.log(response);
+            dispatch(setCredentials({ user: response.data }));
             navigate("/");
             toast.success(response.message);
         } catch (err) {
