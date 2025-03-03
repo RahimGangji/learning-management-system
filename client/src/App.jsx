@@ -10,6 +10,7 @@ import EditProfile from "./pages/EditProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/Dashboard"; // Import your Dashboard component
+import CreateCourse from "./pages/CreateCourse";
 
 const App = () => {
     return (
@@ -34,6 +35,14 @@ const App = () => {
                         element={
                             <ProtectedRoute requiredRole="admin">
                                 <Dashboard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/course/new"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <CreateCourse />
                             </ProtectedRoute>
                         }
                     />
