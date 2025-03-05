@@ -14,7 +14,14 @@ export const coursesApi = createApi({
                 params: { page, limit },
             }),
         }),
+        createCourse: builder.mutation({
+            query: (courseData) => ({
+                url: "/",
+                method: "POST",
+                body: courseData,
+            }),
+        }),
     }),
 });
 
-export const { useGetAllCoursesQuery } = coursesApi;
+export const { useGetAllCoursesQuery, useCreateCourseMutation } = coursesApi;

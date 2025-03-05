@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-
+import React, { useState, useRef } from "react";
+import { useCreateCourseMutation } from "../redux/api/courseApi";
+import toast from "react-hot-toast";
 export default function CreateCourse() {
     const [formData, setFormData] = useState({
         title: "",
@@ -9,8 +10,9 @@ export default function CreateCourse() {
     });
     const [image, setImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [createCourse, { isLoading, error }] = useCreateCourseMutation();
+    const fileInputRef = useRef(null);
 
-    // Handle text input changes
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -19,7 +21,6 @@ export default function CreateCourse() {
         }));
     };
 
-    // Handle toggle button change
     const handleToggleChange = () => {
         setFormData((prev) => ({
             ...prev,
@@ -27,20 +28,46 @@ export default function CreateCourse() {
         }));
     };
 
-    // Handle image upload
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setImage(file);
-            setImagePreview(URL.createObjectURL(file)); // Preview the image
+            setImagePreview(URL.createObjectURL(file));
         }
     };
 
-    // Handle form submission (placeholder for now)
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Form Data:", { ...formData, image });
-        // Add API call or further handling here
+
+        const data = new FormData();
+        data.append("title", formData.title);
+        data.append("description", formData.description);
+        data.append("price", formData.price);
+        data.append("isPublished", formData.isPublished.toString());
+        if (image) {
+            data.append("image", image);
+        }
+
+        try {
+            const response = await createCourse(data).unwrap();
+            toast.success(response.message);
+
+            setFormData({
+                title: "",
+                description: "",
+                price: "",
+                isPublished: false,
+            });
+
+            setImage(null);
+            setImagePreview(null);
+
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        } catch (err) {
+            toast.error(err.data?.message || "Something went wrong");
+        }
     };
 
     return (
@@ -50,7 +77,6 @@ export default function CreateCourse() {
                     Create New Course
                 </h1>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Title */}
                     <div>
                         <label
                             htmlFor="title"
@@ -69,7 +95,6 @@ export default function CreateCourse() {
                         />
                     </div>
 
-                    {/* Description */}
                     <div>
                         <label
                             htmlFor="description"
@@ -88,7 +113,6 @@ export default function CreateCourse() {
                         />
                     </div>
 
-                    {/* Price */}
                     <div>
                         <label
                             htmlFor="price"
@@ -107,7 +131,6 @@ export default function CreateCourse() {
                         />
                     </div>
 
-                    {/* isPublished Toggle */}
                     <div className="flex items-center justify-between">
                         <label
                             htmlFor="isPublished"
@@ -133,7 +156,6 @@ export default function CreateCourse() {
                         </div>
                     </div>
 
-                    {/* Image Upload */}
                     <div>
                         <label
                             htmlFor="image"
@@ -146,6 +168,7 @@ export default function CreateCourse() {
                             id="image"
                             accept="image/*"
                             onChange={handleImageChange}
+                            ref={fileInputRef}
                             className="w-full text-gray-700 border border-gray-300 rounded-md p-2 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#6d28d2] file:text-white hover:file:bg-[#4b1e9e]"
                         />
                         {imagePreview && (
@@ -159,13 +182,23 @@ export default function CreateCourse() {
                         )}
                     </div>
 
-                    {/* Submit Button */}
                     <div>
                         <button
                             type="submit"
-                            className="w-full bg-[#6d28d2] text-white py-2 px-4 rounded-md font-medium hover:bg-[#4b1e9e] transition-colors duration-300"
+                            disabled={isLoading}
+                            className={`w-full py-2 px-4 rounded-md font-medium transition-colors duration-300 ${
+                                isLoading
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-[#6d28d2] text-white hover:bg-[#4b1e9e]"
+                            }`}
                         >
-                            Create Course
+                            {isLoading ? (
+                                <>
+                                    <span className="loading loading-spinner loading-sm"></span>
+                                </>
+                            ) : (
+                                "Create Course"
+                            )}
                         </button>
                     </div>
                 </form>

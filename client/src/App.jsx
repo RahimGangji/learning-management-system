@@ -9,7 +9,7 @@ import store from "./redux/app/store";
 import EditProfile from "./pages/EditProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
-import Dashboard from "./pages/Dashboard"; // Import your Dashboard component
+import Dashboard from "./pages/Dashboard";
 import CreateCourse from "./pages/CreateCourse";
 
 const App = () => {
