@@ -10,11 +10,16 @@ export default function Dashboard() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    const { data, isLoading, isError, error, isFetching } =
-        useGetAllCoursesQuery({
-            page: currentPage,
-            limit: itemsPerPage,
-        });
+    const { data, isLoading, isError, error, isFetching, refetch } =
+        useGetAllCoursesQuery(
+            {
+                page: currentPage,
+                limit: itemsPerPage,
+            },
+            {
+                refetchOnMountOrArgChange: true,
+            }
+        );
 
     const courses = data?.data?.courses || [];
     const totalPages = data?.data?.pagination?.totalPages || 1;
@@ -45,9 +50,11 @@ export default function Dashboard() {
                         isFetching={isFetching}
                         isError={isError}
                         error={error}
+                        limit={itemsPerPage}
                         currentPage={currentPage}
                         totalPages={totalPages}
                         handlePageChange={handlePageChange}
+                        refetchCourses={refetch}
                     />
                 )}
             </div>

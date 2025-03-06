@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const cloudinary = require("../utils/cloudinary");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
+const AsyncHandler = require("../utils/AsyncHandler");
 
 const Register = async (req, res) => {
     try {
@@ -34,35 +35,31 @@ const Register = async (req, res) => {
         return new ApiError(res, 500, "Internal Server Error");
     }
 };
-const Login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) {
-            return new ApiError(res, 400, "Invalid Credentials");
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return new ApiError(res, 400, "Invalid Credentials");
-        }
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-        res.cookie("token", token, {
-            httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000,
-            sameSite: "strict",
-        });
-        const updatedUser = user.toObject();
-        delete updatedUser.password;
-        return new ApiResponse(
-            res,
-            200,
-            updatedUser,
-            "User Logged In Successfully"
-        );
-    } catch (error) {
-        return new ApiError(res, 500, "Internal Server Error");
+const Login = AsyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+        return new ApiError(res, 400, "Invalid Credentials");
     }
-};
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        return new ApiError(res, 400, "Invalid Credentials");
+    }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    res.cookie("token", token, {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "strict",
+    });
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+    return new ApiResponse(
+        res,
+        200,
+        updatedUser,
+        "User Logged In Successfully"
+    );
+});
 const Logout = async (req, res) => {
     try {
         res.clearCookie("token");
@@ -133,6 +130,7 @@ const editProfile = async (req, res) => {
         return new ApiError(res, 500, "Internal Server Error");
     }
 };
+
 module.exports = {
     Register,
     Login,

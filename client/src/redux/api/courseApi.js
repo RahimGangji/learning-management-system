@@ -21,7 +21,18 @@ export const coursesApi = createApi({
                 body: courseData,
             }),
         }),
+        deleteCourse: builder.mutation({
+            query: (courseId) => ({
+                url: `/delete/${courseId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Course"],
+        }),
     }),
 });
 
-export const { useGetAllCoursesQuery, useCreateCourseMutation } = coursesApi;
+export const {
+    useGetAllCoursesQuery,
+    useCreateCourseMutation,
+    useDeleteCourseMutation,
+} = coursesApi;
