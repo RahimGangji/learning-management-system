@@ -1,10 +1,11 @@
-import React from "react";
+import {useState} from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import Pagination from "./Pagination";
 import { useNavigate } from "react-router-dom";
 import { useDeleteCourseMutation } from "../redux/api/courseApi";
 import toast from "react-hot-toast";
+import EditModal from "./EditModal";
 
 const CourseTable = ({
     courses,
@@ -21,8 +22,17 @@ const CourseTable = ({
     const navigate = useNavigate();
     const [deleteCourse, { isLoading: isDeleting }] = useDeleteCourseMutation();
 
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState(null);
+
     const handleEditClick = (course) => {
-        console.log("Edit clicked for course:", course);
+        setSelectedCourse(course);
+        setIsEditModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedCourse(null);
     };
 
     const handleDeleteClick = async (course) => {
@@ -41,7 +51,6 @@ const CourseTable = ({
 
     return (
         <div className="relative">
-            {/* Main content */}
             <div className="">
                 <div className="flex justify-between">
                     <h1 className="text-2xl font-bold mb-4 text-[#6d28d2]">
@@ -120,6 +129,17 @@ const CourseTable = ({
                                                     }
                                                 >
                                                     <FaEdit className="inline-block w-4 h-4" />
+                                                    {isEditModalOpen && (
+                                                        <EditModal
+                                                            course={
+                                                                selectedCourse
+                                                            }
+                                                            onClose={closeModal}
+                                                            refetchCourses={
+                                                                refetchCourses
+                                                            }
+                                                        />
+                                                    )}
                                                 </button>
                                                 <button
                                                     className="text-red-600 mr-4 hover:text-red-800"

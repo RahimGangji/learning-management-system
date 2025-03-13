@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const morgan = require("morgan");
 const databaseConnection = require("./databaseConnection");
 const UserAuth = require("./routes/user.auth");
 const app = express();
@@ -17,6 +18,7 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"));
 app.use("/api/auth", UserAuth);
 app.use("/api/courses", CourseRoute);
 app.listen(process.env.PORT, () => console.log(`Server Has Been Started`));
