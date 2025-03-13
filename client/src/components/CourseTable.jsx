@@ -134,7 +134,7 @@ const CourseTable = ({
                                                             course={
                                                                 selectedCourse
                                                             }
-                                                            onClose={closeModal}
+                                                            closeModal={closeModal}
                                                             refetchCourses={
                                                                 refetchCourses
                                                             }

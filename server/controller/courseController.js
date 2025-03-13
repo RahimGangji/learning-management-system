@@ -118,6 +118,7 @@ const createCourse = async (req, res) => {
     }
 };
 const editCourse = async (req, res) => {
+    console.log(req.body);
     const { title, description, price, isPublished } = req.body;
     const file = req.file;
 
