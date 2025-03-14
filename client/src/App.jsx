@@ -11,6 +11,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/Dashboard";
 import CreateCourse from "./pages/CreateCourse";
+import CoursePage from "./pages/CoursePage";
 
 const App = () => {
     return (
@@ -22,6 +23,7 @@ const App = () => {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<SignUp />} />
+                    <Route path="/courses/:id" element={<CoursePage />} />
                     <Route
                         path="/edit-profile"
                         element={
