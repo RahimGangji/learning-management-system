@@ -1,26 +1,24 @@
 const User = require("../model/User");
+const ApiError = require("../utils/ApiError");
+const AsyncHandler = require("../utils/AsyncHandler");
 
 const restrictTo = (role) => {
-    return async (req, res, next) => {
-        try {
-            const user = await User.findById(req.user.id);
+    return AsyncHandler(async (req, res, next) => {
+        const user = await User.findById(req.user.id);
 
-            if (user.role !== role) {
-                return res.status(403).json({
-                    status: "false",
-                    message:
-                        "You do not have permission to perform this action",
-                });
-            }
-
-            next();
-        } catch (error) {
-            return res.status(500).json({
-                status: "false",
-                message: "Server error",
-            });
+        if (!user) {
+            throw new ApiError(404, "User not found");
         }
-    };
+
+        if (user.role !== role) {
+            throw new ApiError(
+                403,
+                "You do not have permission to perform this action"
+            );
+        }
+
+        next();
+    });
 };
 
 module.exports = restrictTo;

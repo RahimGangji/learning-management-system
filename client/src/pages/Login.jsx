@@ -46,7 +46,7 @@ export default function Login() {
                 <p className="text-center text-gray-600 mb-6">
                     Please login to your account
                 </p>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} noValidate>
                     <div className="mb-6">
                         <label
                             htmlFor="email"

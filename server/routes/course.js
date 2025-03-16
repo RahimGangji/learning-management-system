@@ -13,7 +13,11 @@ const {
 const Authentication = require("../middleware/Authentication");
 const restricTo = require("../middleware/restrictTo");
 const upload = require("../middleware/multer");
-
+const validate = require("../middleware/validate");
+const {
+    createCourseSchema,
+    editCourseSchema,
+} = require("../validation/courseValidation");
 router.get("/admin", Authentication, restricTo("admin"), getAllCoursesAdmin);
 router.get("/published", getAllPublishedCourses);
 router.get(
@@ -34,6 +38,7 @@ router.post(
     Authentication,
     restricTo("admin"),
     upload.single("image"),
+    validate(createCourseSchema),
     createCourse
 );
 router.patch(
@@ -41,6 +46,7 @@ router.patch(
     Authentication,
     restricTo("admin"),
     upload.single("image"),
+    validate(editCourseSchema),
     editCourse
 );
 

@@ -1,23 +1,20 @@
 const jwt = require("jsonwebtoken");
+const AsyncHandler = require("../utils/AsyncHandler");
+const ApiError = require("../utils/ApiError");
 
-const Authentication = (req, res, next) => {
+const Authentication = AsyncHandler(async (req, res, next) => {
     const { token } = req.cookies;
-    if (token) {
-        try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            req.user = decoded;
-            next();
-        } catch (error) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized",
-            });
-        }
-    } else {
-        return res.status(401).json({
-            success: false,
-            message: "Unauthorized",
-        });
+
+    if (!token) {
+        throw new ApiError(401, "Unauthorized");
     }
-};
+
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded) {
+        throw new ApiError(401, "Unauthorized");
+    }
+
+    req.user = decoded;
+    next();
+});
 module.exports = Authentication;

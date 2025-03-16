@@ -1,169 +1,147 @@
 const Course = require("../model/Course");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
+const AsyncHandler = require("../utils/AsyncHandler");
 const cloudinary = require("../utils/cloudinary");
 
-const getAllCoursesAdmin = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
-        const skip = (page - 1) * limit;
-        const totalCourses = await Course.countDocuments();
-        const courses = await Course.find().skip(skip).limit(limit);
-        const pagination = {
-            currentPage: page,
-            totalPages: Math.ceil(totalCourses / limit),
-            totalCourses,
-            hasNextPage: page < Math.ceil(totalCourses / limit),
-            hasPrevPage: page > 1,
-        };
-
-        return new ApiResponse(
-            res,
-            200,
-            { courses, pagination },
-            "All courses fetched successfully"
-        );
-    } catch (error) {
-        return new ApiError(res, 500, "Error While Fetching courses");
+const getCourseByIdAdmin = AsyncHandler(async (req, res) => {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+        throw new ApiError(404, "Course not found");
     }
-};
-const getAllPublishedCourses = async (req, res) => {
-    try {
-        const courses = await Course.find({ isPublished: true });
+    return new ApiResponse(res, 200, course, "Course fetched successfully");
+});
 
-        return new ApiResponse(
-            res,
-            200,
-            courses,
-            "All published courses fetched successfully"
-        );
-    } catch (error) {
-        return new ApiError(res, 500, "Error While Fetching courses");
+const getCourseByIdPublished = AsyncHandler(async (req, res) => {
+    const course = await Course.findOne({
+        _id: req.params.id,
+        isPublished: true,
+    });
+    if (!course) {
+        throw new ApiError(404, "Course not found or not published");
     }
-};
-const getCourseByIdAdmin = async (req, res) => {
-    try {
-        const course = await Course.findById(req.params.id);
-        if (!course) {
-            return new ApiError(res, 404, "Course not found");
-        }
-        return new ApiResponse(res, 200, course, "Course fetched successfully");
-    } catch (error) {
-        return new ApiError(res, 500, "Error While Fetching course");
+    return new ApiResponse(res, 200, course, "Course fetched successfully");
+});
+
+const deleteCourseById = AsyncHandler(async (req, res) => {
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+        throw new ApiError(404, "Course not found");
     }
-};
-const getCourseByIdPublished = async (req, res) => {
-    try {
-        const course = await Course.findOne({
-            _id: req.params.id,
-            isPublished: true,
-        });
-        if (!course) {
-            return new ApiError(res, 404, "Course not found");
-        }
-        return new ApiResponse(res, 200, course, "Course fetched successfully");
-    } catch (error) {
-        return new ApiError(res, 500, "Internal Server Error");
+
+    if (course.image) {
+        const publicId = course.image.split("/").pop().split(".")[0];
+        await cloudinary.uploader
+            .destroy(`course_images/${publicId}`)
+            .catch((err) => {
+                throw new ApiError(
+                    500,
+                    `Failed to delete course image: ${err.message}`
+                );
+            });
     }
-};
-const deleteCourseById = async (req, res) => {
-    try {
-        const course = await Course.findById(req.params.id);
-        if (!course) {
-            return new ApiError(res, 404, "Course not found");
-        }
 
-        if (course.image) {
-            const publicId = course.image.split("/").pop().split(".")[0];
-            await cloudinary.uploader.destroy(`course_images/${publicId}`);
-        }
+    await Course.findByIdAndDelete(req.params.id);
+    return new ApiResponse(res, 200, null, "Course deleted successfully");
+});
 
-        await Course.findByIdAndDelete(req.params.id);
-
-        return new ApiResponse(res, 200, null, "Course deleted successfully");
-    } catch (error) {
-        return new ApiError(res, 500, "Internal Server Error");
-    }
-};
-const createCourse = async (req, res) => {
-    try {
-        const { title, description, price, isPublished } = req.body;
-        const file = req.file;
-
-        if (!title || !description || !price || !file) {
-            return new ApiError(res, 400, "All fields are required");
-        }
-
-        const parsedPrice = parseFloat(price);
-        if (isNaN(parsedPrice)) {
-            return new ApiError(res, 400, "Price must be a valid number");
-        }
-
-        const imageUrl = req.file.path; // Use the URL from CloudinaryStorage
-
-        const course = new Course({
-            title,
-            description,
-            price: parsedPrice,
-            image: imageUrl,
-            isPublished: isPublished === "true" ? true : false, // Handle string-to-boolean conversion
-        });
-
-        await course.save();
-
-        return new ApiResponse(res, 201, course, "Course created successfully");
-    } catch (error) {
-        return new ApiError(res, 500, "Internal Server Error");
-    }
-};
-const editCourse = async (req, res) => {
-    console.log(req.body);
+const createCourse = AsyncHandler(async (req, res) => {
     const { title, description, price, isPublished } = req.body;
     const file = req.file;
 
-    try {
-        const course = await Course.findById(req.params.id);
-        if (!course) {
-            return new ApiError(res, 404, "Course not found");
-        }
-
-        if (title) course.title = title;
-        if (description) course.description = description;
-        if (price) {
-            const parsedPrice = parseFloat(price);
-            if (isNaN(parsedPrice)) {
-                return new ApiError(res, 400, "Price must be a valid number");
-            }
-            course.price = parsedPrice;
-        }
-        if (isPublished !== undefined)
-            course.isPublished = isPublished === "true" ? true : false;
-
-        if (file) {
-            try {
-                if (course.image) {
-                    const previousPublicId = course.image
-                        .split("/")
-                        .slice(-1)[0]
-                        .split(".")[0];
-                    const fullPublicId = `course_images/${previousPublicId}`;
-                    await cloudinary.uploader.destroy(fullPublicId);
-                }
-
-                course.image = req.file.path;
-            } catch (error) {
-                return new ApiError(res, 500, "Error while updating image");
-            }
-        }
-
-        await course.save();
-
-        return new ApiResponse(res, 200, course, "Course updated successfully");
-    } catch (error) {
-        return new ApiError(res, 500, "Internal Server");
+    if (!file) {
+        throw new ApiError(400, "Please upload an image for the course");
     }
-};
+
+    const imageUrl = req.file.path;
+    const course = new Course({
+        title,
+        description,
+        price: parseFloat(price),
+        image: imageUrl,
+        isPublished: isPublished,
+    });
+
+    await course.save();
+    return new ApiResponse(res, 201, course, "Course created successfully");
+});
+
+const editCourse = AsyncHandler(async (req, res) => {
+    const { title, description, price, isPublished } = req.body;
+    const file = req.file;
+
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+        throw new ApiError(404, "Course not found");
+    }
+
+    if (title) course.title = title;
+    if (description) course.description = description;
+    if (price) {
+        course.price = parseFloat(price);
+    }
+    if (isPublished !== undefined) {
+        course.isPublished = isPublished;
+    }
+
+    if (file) {
+        if (course.image) {
+            const previousPublicId = course.image
+                .split("/")
+                .pop()
+                .split(".")[0];
+            const fullPublicId = `course_images/${previousPublicId}`;
+            await cloudinary.uploader.destroy(fullPublicId).catch((err) => {
+                throw new ApiError(
+                    500,
+                    `Failed to delete previous image: ${err.message}`
+                );
+            });
+        }
+        course.image = req.file.path;
+    }
+
+    await course.save();
+    return new ApiResponse(res, 200, course, "Course updated successfully");
+});
+
+const getAllCoursesAdmin = AsyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    if (page < 1 || limit < 1) {
+        throw new ApiError(400, "Page and limit must be positive numbers");
+    }
+
+    const totalCourses = await Course.countDocuments();
+    const courses = await Course.find().skip(skip).limit(limit);
+
+    const pagination = {
+        currentPage: page,
+        totalPages: Math.ceil(totalCourses / limit),
+        totalCourses,
+        hasNextPage: page < Math.ceil(totalCourses / limit),
+        hasPrevPage: page > 1,
+    };
+
+    return new ApiResponse(
+        res,
+        200,
+        { courses, pagination },
+        "All courses fetched successfully"
+    );
+});
+const getAllPublishedCourses = AsyncHandler(async (req, res) => {
+    const courses = await Course.find({ isPublished: true });
+    return new ApiResponse(
+        res,
+        200,
+        courses,
+        "All published courses fetched successfully"
+    );
+});
+
 module.exports = {
     getAllCoursesAdmin,
     getAllPublishedCourses,

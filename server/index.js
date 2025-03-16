@@ -7,6 +7,7 @@ const UserAuth = require("./routes/user.auth");
 const app = express();
 const cookieParser = require("cookie-parser");
 const CourseRoute = require("./routes/course");
+const errorHandler = require("./middleware/errorHandler");
 databaseConnection();
 app.use(
     cors({
@@ -21,4 +22,5 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use("/api/auth", UserAuth);
 app.use("/api/courses", CourseRoute);
+app.use(errorHandler);
 app.listen(process.env.PORT, () => console.log(`Server Has Been Started`));
