@@ -3,6 +3,9 @@ const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const AsyncHandler = require("../utils/AsyncHandler");
 const cloudinary = require("../utils/cloudinary");
+const {
+    getAllCoursesAdminQuerySchema,
+} = require("../validation/courseValidation");
 
 const getCourseByIdAdmin = AsyncHandler(async (req, res) => {
     const course = await Course.findById(req.params.id);
@@ -106,13 +109,9 @@ const editCourse = AsyncHandler(async (req, res) => {
 });
 
 const getAllCoursesAdmin = AsyncHandler(async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
-    const skip = (page - 1) * limit;
+    const { page, limit } = getAllCoursesAdminQuerySchema.parse(req.query);
 
-    if (page < 1 || limit < 1) {
-        throw new ApiError(400, "Page and limit must be positive numbers");
-    }
+    const skip = (page - 1) * limit;
 
     const totalCourses = await Course.countDocuments();
     const courses = await Course.find().skip(skip).limit(limit);

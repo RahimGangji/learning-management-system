@@ -16,7 +16,25 @@ const createCourseSchema = z.object({
         .transform((val) => (val === "true" ? true : false)), // Converts string to boolean
 });
 
-// Schema for editing a course (all fields optional, at least one required)
+const getAllCoursesAdminQuerySchema = z.object({
+    page: z
+        .string()
+        .optional()
+        .default("1")
+        .transform((val) => parseInt(val))
+        .refine((val) => val > 0, {
+            message: "Page must be a positive number",
+        }),
+    limit: z
+        .string()
+        .optional()
+        .default("5")
+        .transform((val) => parseInt(val))
+        .refine((val) => val > 0, {
+            message: "Limit must be a positive number",
+        }),
+});
+
 const editCourseSchema = z
     .object({
         title: z.string().min(1, "Title is required").trim().optional(),
@@ -40,8 +58,8 @@ const editCourseSchema = z
     .refine((data) => Object.keys(data).length > 0, {
         message: "At least one field must be provided for update",
     });
-
 module.exports = {
     createCourseSchema,
     editCourseSchema,
+    getAllCoursesAdminQuerySchema,
 };
