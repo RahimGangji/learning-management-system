@@ -109,12 +109,18 @@ const editCourse = AsyncHandler(async (req, res) => {
 });
 
 const getAllCoursesAdmin = AsyncHandler(async (req, res) => {
-    const { page, limit } = getAllCoursesAdminQuerySchema.parse(req.query);
+    const { page, limit, search } = getAllCoursesAdminQuerySchema.parse(
+        req.query
+    );
 
     const skip = (page - 1) * limit;
-
-    const totalCourses = await Course.countDocuments();
-    const courses = await Course.find().skip(skip).limit(limit);
+    let query = {};
+    if (search) {
+        // Case-insensitive search using regex
+        query.name = { $regex: new RegExp(search, "i") };
+    }
+    const totalCourses = await Course.countDocuments(query);
+    const courses = await Course.find(query).skip(skip).limit(limit);
 
     const pagination = {
         currentPage: page,

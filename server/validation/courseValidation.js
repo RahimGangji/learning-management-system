@@ -33,6 +33,13 @@ const getAllCoursesAdminQuerySchema = z.object({
         .refine((val) => val > 0, {
             message: "Limit must be a positive number",
         }),
+    search: z
+        .string()
+        .optional()
+        .transform((val) => val?.trim()) // Trim whitespace from search term
+        .refine((val) => val === undefined || val.length > 0, {
+            message: "Search term cannot be empty",
+        }),
 });
 
 const editCourseSchema = z

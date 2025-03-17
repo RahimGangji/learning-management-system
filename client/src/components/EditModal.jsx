@@ -8,8 +8,9 @@ const EditModal = ({ course, closeModal, refetchCourses }) => {
         title: course?.title,
         description: course?.description,
         price: course?.price,
-        image: course?.image,   
+        image: course?.image,
         isPublished: course?.isPublished,
+        id: course?._id,
     });
 
     const [preview, setPreview] = useState(formData.image || "");
@@ -36,7 +37,8 @@ const EditModal = ({ course, closeModal, refetchCourses }) => {
         e.preventDefault();
 
         const data = new FormData();
-        data.append("id", course?._id);
+
+        data.append("id", formData.id);
         data.append("title", formData.title);
         data.append("description", formData.description);
         data.append("price", formData.price);
@@ -47,10 +49,11 @@ const EditModal = ({ course, closeModal, refetchCourses }) => {
 
         try {
             const response = await updateCourse(data).unwrap();
+
             toast.success(response.message);
             closeModal();
+            refetchCourses();
         } catch (err) {
-            console.error(err);
             toast.error(err.data?.message || "Something went wrong");
             closeModal();
         }
@@ -70,10 +73,13 @@ const EditModal = ({ course, closeModal, refetchCourses }) => {
                 <h2 className="text-lg font-bold mb-4 text-center">
                     Edit Course
                 </h2>
-                <button onClick={e => {
-                    e.stopPropagation();
-                    closeModal();
-                }} className="absolute right-5 top-5">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        closeModal();
+                    }}
+                    className="absolute right-5 top-5"
+                >
                     <X />
                 </button>
 
@@ -201,30 +207,30 @@ const EditModal = ({ course, closeModal, refetchCourses }) => {
                         </label>
                     </div>
                 </form>
-                    <div className="flex justify-end space-x-4">
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                closeModal();
-                            }}
-                            className="px-4 py-2 bg-gray-300 rounded-md"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleSubmit}
-                            className="px-4 py-2 bg-[#6d28d2] text-white rounded-md"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <span className="loading loading-spinner loading-sm"></span>
-                                </>
-                            ) : (
-                                "Update"
-                            )}
-                        </button>
-                    </div>
+                <div className="flex justify-end space-x-4">
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            closeModal();
+                        }}
+                        className="px-4 py-2 bg-gray-300 rounded-md"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSubmit}
+                        className="px-4 py-2 bg-[#6d28d2] text-white rounded-md"
+                    >
+                        {isLoading ? (
+                            <>
+                                <span className="loading loading-spinner loading-sm"></span>
+                            </>
+                        ) : (
+                            "Update"
+                        )}
+                    </button>
+                </div>
             </div>
         </div>
     );

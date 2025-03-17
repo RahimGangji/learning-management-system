@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import Pagination from "./Pagination";
@@ -43,10 +43,6 @@ const CourseTable = ({
         } catch (err) {
             toast.error(err?.data?.message || "Something Went Wrong");
         }
-    };
-
-    const handleAddClick = (course) => {
-        console.log("Add clicked for course:", course);
     };
 
     return (
@@ -134,7 +130,9 @@ const CourseTable = ({
                                                             course={
                                                                 selectedCourse
                                                             }
-                                                            closeModal={closeModal}
+                                                            closeModal={
+                                                                closeModal
+                                                            }
                                                             refetchCourses={
                                                                 refetchCourses
                                                             }
@@ -152,12 +150,7 @@ const CourseTable = ({
                                                 >
                                                     <FaTrash className="inline-block w-4 h-4" />
                                                 </button>
-                                                <button
-                                                    className="text-[#0cad22] hover:text-[#087d18]"
-                                                    onClick={() =>
-                                                        handleAddClick(course)
-                                                    }
-                                                >
+                                                <button className="text-[#0cad22] hover:text-[#087d18]">
                                                     <IoIosAddCircleOutline className="inline-block w-5 h-5" />
                                                 </button>
                                             </td>
