@@ -41,6 +41,36 @@ const getAllCoursesAdminQuerySchema = z.object({
             message: "Search term cannot be empty",
         }),
 });
+const getAllPublishedCoursesQuerySchema = z.object({
+    page: z
+        .string()
+        .optional()
+        .default("1")
+        .transform((val) => parseInt(val))
+        .refine((val) => val > 0, {
+            message: "Page must be a positive number",
+        }),
+    limit: z
+        .string()
+        .optional()
+        .default("10")
+        .transform((val) => parseInt(val))
+        .refine((val) => val > 0, {
+            message: "Limit must be a positive number",
+        }),
+    search: z
+        .string()
+        .optional()
+        .transform((val) => val?.trim())
+        .refine((val) => val === undefined || val.length > 0, {
+            message: "Search term cannot be empty",
+        }),
+    sortField: z
+        .enum(["title", "price", "createdAt"])
+        .optional()
+        .default("createdAt"),
+    sortDirection: z.enum(["asc", "desc"]).optional().default("asc"),
+});
 
 const editCourseSchema = z
     .object({
@@ -69,4 +99,5 @@ module.exports = {
     createCourseSchema,
     editCourseSchema,
     getAllCoursesAdminQuerySchema,
+    getAllPublishedCoursesQuerySchema,
 };

@@ -5,6 +5,7 @@ const AsyncHandler = require("../utils/AsyncHandler");
 const cloudinary = require("../utils/cloudinary");
 const {
     getAllCoursesAdminQuerySchema,
+    getAllPublishedCoursesQuerySchema,
 } = require("../validation/courseValidation");
 
 const getCourseByIdAdmin = AsyncHandler(async (req, res) => {
@@ -116,8 +117,7 @@ const getAllCoursesAdmin = AsyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
     let query = {};
     if (search) {
-        // Case-insensitive search using regex
-        query.name = { $regex: new RegExp(search, "i") };
+        query.title = { $regex: new RegExp(search, "i") };
     }
     const totalCourses = await Course.countDocuments(query);
     const courses = await Course.find(query).skip(skip).limit(limit);
@@ -138,11 +138,32 @@ const getAllCoursesAdmin = AsyncHandler(async (req, res) => {
     );
 });
 const getAllPublishedCourses = AsyncHandler(async (req, res) => {
-    const courses = await Course.find({ isPublished: true });
+    const { page, limit, search, sortDirection, sortField } =
+        getAllPublishedCoursesQuerySchema.parse(req.query);
+    const skip = (page - 1) * limit;
+    let query = { isPublished: true };
+    if (search) {
+        query.title = { $regex: new RegExp(search, "i") };
+    }
+    const sortOption = {
+        [sortField]: sortDirection == "asc" ? 1 : -1,
+    };
+    const totalCourses = await Course.countDocuments(query);
+    const courses = await Course.find(query)
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limit);
+    const pagination = {
+        currentPage: page,
+        totalPages: Math.ceil(totalCourses / limit),
+        totalCourses,
+        hasNextPage: page < Math.ceil(totalCourses / limit),
+        hasPrevPage: page > 1,
+    };
     return new ApiResponse(
         res,
         200,
-        courses,
+        { courses, pagination },
         "All published courses fetched successfully"
     );
 });

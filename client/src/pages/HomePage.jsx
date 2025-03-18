@@ -29,7 +29,7 @@ export default function HomePage() {
                 </div>
             </div>
             <div className="flex space-x-4 justify-center items-center my-6">
-                {data?.data.map((course) => {
+                {data?.data?.courses.map((course) => {
                     return (
                         <Link to={`courses/${course?._id}`}>
                             <CourseCard key={course?._id} course={course} />
