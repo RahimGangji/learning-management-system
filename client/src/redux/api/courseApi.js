@@ -14,9 +14,10 @@ export const coursesApi = createApi({
             }),
         }),
         getPublishedCourses: builder.query({
-            query: () => ({
+            query: ({ page, limit, search, sortField, sortDirection }) => ({
                 url: "/published",
-                method: "GET"
+                method: "GET",
+                params: { page, limit, search, sortDirection, sortField }
             }),
         }),
         getPublishedCourse: builder.query({

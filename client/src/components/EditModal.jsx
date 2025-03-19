@@ -69,15 +69,12 @@ const EditModal = ({ course, closeModal, refetchCourses }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-md sm:w-[50vw] w-[80vw] relative">
-                <h2 className="text-lg font-bold mb-4 text-center">
+            <div className="bg-white p-6 overflow-scroll rounded-md sm:w-[50vw] h-[80vh] w-[80vw] relative">
+                <h2 className="text-lg text-[#6d28d2] font-bold mb-4 text-center">
                     Edit Course
                 </h2>
                 <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        closeModal();
-                    }}
+                    onClick={closeModal}
                     className="absolute right-5 top-5"
                 >
                     <X />
@@ -210,10 +207,7 @@ const EditModal = ({ course, closeModal, refetchCourses }) => {
                 <div className="flex justify-end space-x-4">
                     <button
                         type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            closeModal();
-                        }}
+                        onClick={closeModal}
                         className="px-4 py-2 bg-gray-300 rounded-md"
                     >
                         Cancel

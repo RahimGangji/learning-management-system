@@ -1,6 +1,5 @@
 const { z } = require("zod");
 
-// Schema for creating a course (all fields required except isPublished)
 const createCourseSchema = z.object({
     title: z.string().min(1, "Title is required").trim(),
     description: z.string().min(1, "Description is required").trim(),
@@ -13,7 +12,7 @@ const createCourseSchema = z.object({
     isPublished: z
         .string()
         .optional()
-        .transform((val) => (val === "true" ? true : false)), // Converts string to boolean
+        .transform((val) => (val === "true" ? true : false)),
 });
 
 const getAllCoursesAdminQuerySchema = z.object({
@@ -40,6 +39,36 @@ const getAllCoursesAdminQuerySchema = z.object({
         .refine((val) => val === undefined || val.length > 0, {
             message: "Search term cannot be empty",
         }),
+});
+const getAllPublishedCoursesQuerySchema = z.object({
+    page: z
+        .string()
+        .optional()
+        .default("1")
+        .transform((val) => parseInt(val))
+        .refine((val) => val > 0, {
+            message: "Page must be a positive number",
+        }),
+    limit: z
+        .string()
+        .optional()
+        .default("10")
+        .transform((val) => parseInt(val))
+        .refine((val) => val > 0, {
+            message: "Limit must be a positive number",
+        }),
+    search: z
+        .string()
+        .optional()
+        .transform((val) => val?.trim())
+        .refine((val) => val === undefined || val.length > 0, {
+            message: "Search term cannot be empty",
+        }),
+    sortField: z
+        .enum(["title", "price", "createdAt"])
+        .optional()
+        .default("createdAt"),
+    sortDirection: z.enum(["asc", "desc"]).optional().default("asc"),
 });
 
 const editCourseSchema = z
@@ -69,4 +98,5 @@ module.exports = {
     createCourseSchema,
     editCourseSchema,
     getAllCoursesAdminQuerySchema,
+    getAllPublishedCoursesQuerySchema,
 };

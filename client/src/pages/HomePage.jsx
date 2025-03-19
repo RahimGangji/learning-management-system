@@ -30,7 +30,7 @@ export default function HomePage() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-8 px-4 py-10 max-w-6xl mx-auto">
-                {data?.data.map((course) => (
+                {data?.data?.courses.map((course) => (
                     <Link to={`courses/${course?._id}`} key={course?._id}>
                         <CourseCard course={course} />
                     </Link>
