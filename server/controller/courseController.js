@@ -150,6 +150,7 @@ const getAllPublishedCourses = AsyncHandler(async (req, res) => {
     };
     const totalCourses = await Course.countDocuments(query);
     const courses = await Course.find(query)
+        .collation({ locale: "en", strength: 2 })
         .sort(sortOption)
         .skip(skip)
         .limit(limit);
