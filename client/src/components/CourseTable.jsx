@@ -3,7 +3,10 @@ import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import Pagination from "./Pagination";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useDeleteCourseMutation, useGetPublishedCoursesQuery } from "../redux/api/courseApi";
+import {
+    useDeleteCourseMutation,
+    useGetAllCoursesQuery,
+} from "../redux/api/courseApi";
 import toast from "react-hot-toast";
 import EditModal from "./EditModal";
 import { Tooltip } from "react-tooltip";
@@ -25,28 +28,33 @@ const CourseTable = ({
     const [allCourses, setAllCourses] = useState(initialCourses);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
-    const [query, setQuery] = useState("");
+    const [query, setQuery] = useState(""); // Input field value
+    const [submittedSearch, setSubmittedSearch] = useState(""); // Actual search term to trigger API
     const [searchParams, setSearchParams] = useSearchParams();
 
     const page = Number(searchParams.get("page")) || initialPage || 1;
     const limit = Number(searchParams.get("limit")) || initialLimit || 10;
     const search = searchParams.get("search") || "";
-    const sortField = searchParams.get("sortField") || "createdAt";
-    const sortDirection = searchParams.get("sortDirection") || "asc";
 
-    const { data, isLoading, isFetching, isError, error } = useGetPublishedCoursesQuery(
-        { page, limit, search, sortField, sortDirection },
-        { skip: !search }
-    );
+    // Only include search parameter if submittedSearch exists
+    const queryParams = {
+        page,
+        limit,
+        ...(submittedSearch.trim() && { search: submittedSearch.trim() }),
+    };
+
+    const { data, isLoading, isFetching, isError, error } =
+        useGetAllCoursesQuery(queryParams);
 
     useEffect(() => {
-        if (!search) {
-            setAllCourses(initialCourses); 
-            setQuery("");
-        } else if (data?.data?.courses) {
-            setAllCourses(data?.data?.courses);
-            setQuery(search);
+        if (data?.data?.courses) {
+            setAllCourses(data.data.courses);
+        } else {
+            setAllCourses(initialCourses);
         }
+        // Set initial query and submittedSearch from URL on mount
+        setQuery(search);
+        setSubmittedSearch(search);
     }, [data, initialCourses, search]);
 
     const handleEditClick = (course) => {
@@ -66,23 +74,26 @@ const CourseTable = ({
             setSearchParams({
                 page: "1",
                 limit: limit.toString(),
-                sortField,
-                sortDirection,
             });
+            setSubmittedSearch(""); // Clear submitted search when input is empty
         }
     };
 
     const handleSubmit = () => {
         if (!query.trim()) {
-            toast.error("Please enter a search term to apply filters or search");
+            setSearchParams({
+                page: "1",
+                limit: limit.toString(),
+            });
+            setSubmittedSearch("");
             return;
         }
+
+        setSubmittedSearch(query.trim()); // Update submitted search term
         setSearchParams({
             page: "1",
             limit: limit.toString(),
             search: query.trim(),
-            sortField,
-            sortDirection,
         });
     };
 
@@ -96,7 +107,9 @@ const CourseTable = ({
         }
     };
 
-    const totalPages = search && data?.pagination ? data.pagination.totalPages : initialTotalPages;
+    const totalPages = data?.pagination
+        ? data.pagination.totalPages
+        : initialTotalPages;
 
     return (
         <div className="relative">
@@ -132,28 +145,6 @@ const CourseTable = ({
                             </button>
                         </div>
 
-                        <div className="relative">
-                            <select
-                                value={sortDirection}
-                                onChange={(e) =>
-                                    setSearchParams({
-                                        page: page.toString(),
-                                        limit: limit.toString(),
-                                        search,
-                                        sortField,
-                                        sortDirection: e.target.value,
-                                    })
-                                }
-                                className="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white shadow-sm focus:outline-none"
-                            >
-                                <option disabled value="">
-                                    Filter
-                                </option>
-                                <option value="asc">Ascending</option>
-                                <option value="desc">Descending</option>
-                            </select>
-                        </div>
-
                         <button
                             onClick={() => navigate("/course/new")}
                             className="px-4 py-2 rounded-md font-medium text-sm transition-colors duration-200 bg-[#6d28d2] text-white hover:bg-[#4b1e9e]"
@@ -163,14 +154,14 @@ const CourseTable = ({
                     </div>
                 </div>
 
-                {(search ? (isLoading || isFetching) : (initialLoading || initialFetching)) ? (
+                {isLoading || isFetching ? (
                     <div className="min-h-screen flex items-center justify-center bg-white">
                         <span className="loading loading-spinner loading-lg"></span>
                     </div>
-                ) : (search ? isError : initialError) ? (
+                ) : isError ? (
                     <div className="min-h-screen bg-white">
                         <div className="text-center text-red-600">
-                            {search ? error?.data?.message || "Error fetching courses" : initialErrorData?.message || "Error loading initial courses"}
+                            {error?.data?.message || "Error fetching courses"}
                         </div>
                     </div>
                 ) : allCourses.length === 0 ? (
@@ -226,7 +217,9 @@ const CourseTable = ({
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                                 <button
                                                     className="text-[#6d28d2] mr-4 hover:text-[#4b1e9e]"
-                                                    onClick={() => handleEditClick(course)}
+                                                    onClick={() =>
+                                                        handleEditClick(course)
+                                                    }
                                                     data-tooltip-id="edit-tooltip"
                                                     data-tooltip-content="Click to edit course!"
                                                 >
@@ -238,7 +231,11 @@ const CourseTable = ({
                                                 />
                                                 <button
                                                     className="text-red-600 mr-4 hover:text-red-800"
-                                                    onClick={() => handleDeleteClick(course)}
+                                                    onClick={() =>
+                                                        handleDeleteClick(
+                                                            course
+                                                        )
+                                                    }
                                                     disabled={isDeleting}
                                                     data-tooltip-id="delete-tooltip"
                                                     data-tooltip-content="Click to delete course!"
@@ -273,9 +270,9 @@ const CourseTable = ({
                                 setSearchParams({
                                     page: newPage.toString(),
                                     limit: limit.toString(),
-                                    search,
-                                    sortField,
-                                    sortDirection,
+                                    ...(submittedSearch.trim() && {
+                                        search: submittedSearch.trim(),
+                                    }),
                                 })
                             }
                         />

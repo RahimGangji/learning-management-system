@@ -8,22 +8,22 @@ export const coursesApi = createApi({
     }),
     endpoints: (builder) => ({
         getAllCourses: builder.query({
-            query: ({ page = 1, limit = 5 }) => ({
+            query: ({ page = 1, limit = 5, search }) => ({
                 url: "/admin",
-                params: { page, limit },
+                params: { page, limit, ...(search && { search }) },
             }),
         }),
         getPublishedCourses: builder.query({
             query: ({ page, limit, search, sortField, sortDirection }) => ({
                 url: "/published",
                 method: "GET",
-                params: { page, limit, search, sortDirection, sortField }
+                params: { page, limit, search, sortDirection, sortField },
             }),
         }),
         getPublishedCourse: builder.query({
             query: (courseId) => ({
                 url: `/published/${courseId}`,
-                method: "GET"
+                method: "GET",
             }),
         }),
         updateCourse: builder.mutation({
@@ -56,5 +56,5 @@ export const {
     useCreateCourseMutation,
     useDeleteCourseMutation,
     useUpdateCourseMutation,
-    useGetPublishedCoursesQuery
+    useGetPublishedCoursesQuery,
 } = coursesApi;
