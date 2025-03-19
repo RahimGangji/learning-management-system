@@ -4,7 +4,13 @@ import CourseCard from "../components/CourseCard";
 import { Link } from "react-router-dom";
 
 export default function HomePage() {
-    const { data, isLoading, isError } = useGetPublishedCoursesQuery();
+    const { data, isLoading, isError, error, isFetching } =
+        useGetPublishedCoursesQuery({}); // Pass empty object to trigger with defaults
+
+    console.log("Data:", data);
+    console.log("isLoading:", isLoading);
+    console.log("isFetching:", isFetching);
+    console.log("isError:", isError);
 
     return (
         <div className="flex flex-col min-h-screen bg-white">
