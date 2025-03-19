@@ -28,8 +28,8 @@ const CourseTable = ({
     const [allCourses, setAllCourses] = useState(initialCourses);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState(null);
-    const [query, setQuery] = useState(""); // Input field value
-    const [submittedSearch, setSubmittedSearch] = useState(""); // Actual search term to trigger API
+    const [query, setQuery] = useState("");
+    const [submittedSearch, setSubmittedSearch] = useState("");
     const [searchParams, setSearchParams] = useSearchParams();
 
     const page = Number(searchParams.get("page")) || initialPage || 1;
@@ -164,7 +164,7 @@ const CourseTable = ({
                             {error?.data?.message || "Error fetching courses"}
                         </div>
                     </div>
-                ) : allCourses.length === 0 ? (
+                ) : initialCourses.length === 0 ? (
                     <div className="flex justify-center items-center h-96 text-center font-bold text-[#ff051e]">
                         No courses available.
                     </div>
