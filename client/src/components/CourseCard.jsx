@@ -17,7 +17,7 @@ const CourseCard = ({ course }) => {
                 </div>
                 <p className="text-gray-600 mb-4 line-clamp-2 flex-1">{course?.description}</p>
                 <button
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
+                    className="w-full bg-gradient-to-r from-[#6d28d2] to-[#8b5cf6] text-white py-2 rounded-lg transition-all duration-300"
                 >
                     Enroll Now
                 </button>

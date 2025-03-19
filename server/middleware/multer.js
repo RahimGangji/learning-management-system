@@ -15,12 +15,12 @@ const storage = new CloudinaryStorage({
 
         return {
             folder,
-            format: req.originalUrl.includes("/api/courses") ? "jpg" : "png", // Synchronous
+            format: req.originalUrl.includes("/api/courses") ? "jpg" : "png",
             public_id: `${publicIdPrefix}_${Date.now()}`,
         };
     },
 });
 
-const upload = multer({ storage: storage }); // No limits applied
+const upload = multer({ storage: storage });
 
 module.exports = upload;

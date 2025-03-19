@@ -28,14 +28,13 @@ export default function HomePage() {
                     </div>
                 </div>
             </div>
-            <div className="flex space-x-4 justify-center items-center my-6">
-                {data?.data.map((course) => {
-                    return (
-                        <Link to={`courses/${course?._id}`}>
-                            <CourseCard key={course?._id} course={course} />
-                        </Link>
-                    );
-                })}
+
+            <div className="flex flex-wrap justify-center gap-8 px-4 py-10 max-w-6xl mx-auto">
+                {data?.data.map((course) => (
+                    <Link to={`courses/${course?._id}`} key={course?._id}>
+                        <CourseCard course={course} />
+                    </Link>
+                ))}
             </div>
         </div>
     );
