@@ -1,11 +1,11 @@
 import React from "react";
 import { useGetPublishedCoursesQuery } from "../redux/api/courseApi";
-import CourseCard from "../components/CourseCard";
+import Slider from "../components/Slider";
 import { Link } from "react-router-dom";
 
 export default function HomePage() {
     const { data, isLoading, isError, error, isFetching } =
-        useGetPublishedCoursesQuery({}); // Pass empty object to trigger with defaults
+        useGetPublishedCoursesQuery({});
 
     console.log("Data:", data);
     console.log("isLoading:", isLoading);
@@ -25,9 +25,11 @@ export default function HomePage() {
                     </p>
 
                     <div className="flex justify-center gap-4 animate-fade-in delay-200">
-                        <button className="px-8 py-3 bg-white text-[#6d28d2] rounded-lg font-semibold hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl">
-                            Explore Courses
-                        </button>
+                        <Link to="/all-courses">
+                            <button className="px-8 py-3 bg-white text-[#6d28d2] rounded-lg font-semibold hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl">
+                                Explore Courses
+                            </button>
+                        </Link>
                         <button className="px-8 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#6d28d2] transition-all">
                             View FAQ
                         </button>
@@ -35,13 +37,7 @@ export default function HomePage() {
                 </div>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-8 px-4 py-10 max-w-6xl mx-auto">
-                {data?.data?.courses.map((course) => (
-                    <Link to={`courses/${course?._id}`} key={course?._id}>
-                        <CourseCard course={course} />
-                    </Link>
-                ))}
-            </div>
+            <Slider courses={data?.data?.courses} />
         </div>
     );
 }

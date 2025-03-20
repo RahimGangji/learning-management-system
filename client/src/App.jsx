@@ -12,6 +12,7 @@ import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/Dashboard";
 import CreateCourse from "./pages/CreateCourse";
 import CoursePage from "./pages/CoursePage";
+import AllCoursesPage from "./pages/AllCoursesPage";
 
 const App = () => {
     return (
@@ -24,6 +25,7 @@ const App = () => {
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<SignUp />} />
                     <Route path="/courses/:id" element={<CoursePage />} />
+                    <Route path="/all-courses" element={<AllCoursesPage />} />
                     <Route
                         path="/edit-profile"
                         element={
