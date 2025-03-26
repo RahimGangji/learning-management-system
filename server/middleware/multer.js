@@ -1,26 +1,19 @@
+// middleware/multer.js
 const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("../utils/cloudinary");
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: (req, file) => {
-        let folder = "user_profiles";
-        let publicIdPrefix = `user_${req.user?.id || Date.now()}`;
+const storage = multer.memoryStorage();
 
-        if (req.originalUrl.includes("/api/courses")) {
-            folder = "course_images";
-            publicIdPrefix = `course_${req.params.id || Date.now()}`;
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        const isImage = file.mimetype.startsWith("image/");
+        const isVideo = file.mimetype.startsWith("video/");
+        if (isImage || isVideo) {
+            cb(null, true);
+        } else {
+            cb(new Error("Only images or videos are allowed"), false);
         }
-
-        return {
-            folder,
-            format: req.originalUrl.includes("/api/courses") ? "jpg" : "png", // Synchronous
-            public_id: `${publicIdPrefix}_${Date.now()}`,
-        };
     },
 });
-
-const upload = multer({ storage: storage }); // No limits applied
 
 module.exports = upload;

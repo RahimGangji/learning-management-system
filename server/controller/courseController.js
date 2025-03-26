@@ -50,19 +50,33 @@ const deleteCourseById = AsyncHandler(async (req, res) => {
 });
 
 const createCourse = AsyncHandler(async (req, res) => {
+    console.log("test");
     const { title, description, price, isPublished } = req.body;
     const file = req.file;
 
-    if (!file) {
+    if (!req.file || !req.file.buffer) {
         throw new ApiError(400, "Please upload an image for the course");
     }
+
+    const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            {
+                resource_type: "image",
+                folder: "course_images",
+                public_id: `course_${Date.now()}`,
+                format: "jpg",
+            },
+            (error, result) => (error ? reject(error) : resolve(result))
+        );
+        stream.end(req.file.buffer);
+    });
 
     const imageUrl = req.file.path;
     const course = new Course({
         title,
         description,
         price: parseFloat(price),
-        image: imageUrl,
+        image: uploadResult.secure_url,
         isPublished: isPublished,
     });
 
@@ -72,7 +86,6 @@ const createCourse = AsyncHandler(async (req, res) => {
 
 const editCourse = AsyncHandler(async (req, res) => {
     const { title, description, price, isPublished } = req.body;
-    const file = req.file;
 
     const course = await Course.findById(req.params.id);
     if (!course) {
@@ -88,7 +101,7 @@ const editCourse = AsyncHandler(async (req, res) => {
         course.isPublished = isPublished;
     }
 
-    if (file) {
+    if (req.file && req.file.buffer) {
         if (course.image) {
             const previousPublicId = course.image
                 .split("/")
@@ -102,7 +115,19 @@ const editCourse = AsyncHandler(async (req, res) => {
                 );
             });
         }
-        course.image = req.file.path;
+        const uploadResult = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                {
+                    resource_type: "image",
+                    folder: "course_images",
+                    public_id: `course_${req.params.id}_${Date.now()}`,
+                    format: "jpg",
+                },
+                (error, result) => (error ? reject(error) : resolve(result))
+            );
+            stream.end(req.file.buffer);
+        });
+        course.image = uploadResult.secure_url;
     }
 
     await course.save();

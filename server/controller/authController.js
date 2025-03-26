@@ -90,7 +90,6 @@ const getProfile = AsyncHandler(async (req, res) => {
 // Edit Profile API
 const editProfile = AsyncHandler(async (req, res) => {
     const { fullName } = req.body;
-    const file = req.file;
 
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -101,7 +100,7 @@ const editProfile = AsyncHandler(async (req, res) => {
         user.fullName = fullName;
     }
 
-    if (file) {
+    if (req.file && req.file.buffer) {
         if (user.profilePicture) {
             const previousPublicId = user.profilePicture
                 .split("/")
@@ -115,7 +114,19 @@ const editProfile = AsyncHandler(async (req, res) => {
                 );
             });
         }
-        user.profilePicture = req.file.path;
+        const uploadResult = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                {
+                    resource_type: "image",
+                    folder: "user_profiles",
+                    public_id: `user_${req.user.id}_${Date.now()}`,
+                    format: "png",
+                },
+                (error, result) => (error ? reject(error) : resolve(result))
+            );
+            stream.end(req.file.buffer);
+        });
+        user.profilePicture = uploadResult.secure_url;
     }
 
     await user.save();
