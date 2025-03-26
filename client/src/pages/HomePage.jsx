@@ -7,11 +7,6 @@ export default function HomePage() {
     const { data, isLoading, isError, error, isFetching } =
         useGetPublishedCoursesQuery({});
 
-    console.log("Data:", data);
-    console.log("isLoading:", isLoading);
-    console.log("isFetching:", isFetching);
-    console.log("isError:", isError);
-
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <div className="flex items-center justify-center h-[400px] w-full bg-gradient-to-r from-[#6d28d2] to-[#8b5cf6] text-white">
@@ -37,7 +32,11 @@ export default function HomePage() {
                 </div>
             </div>
 
-            <Slider courses={data?.data?.courses} />
+            <Slider
+                courses={data?.data?.courses}
+                loading={isLoading}
+                error={isError}
+            />
         </div>
     );
 }
