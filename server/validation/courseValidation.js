@@ -1,6 +1,5 @@
 const { z } = require("zod");
 
-// Schema for creating a course (all fields required except isPublished)
 const createCourseSchema = z.object({
     title: z.string().min(1, "Title is required").trim(),
     description: z.string().min(1, "Description is required").trim(),
@@ -13,7 +12,7 @@ const createCourseSchema = z.object({
     isPublished: z
         .string()
         .optional()
-        .transform((val) => (val === "true" ? true : false)), // Converts string to boolean
+        .transform((val) => (val === "true" ? true : false)),
 });
 
 const getAllCoursesAdminQuerySchema = z.object({
