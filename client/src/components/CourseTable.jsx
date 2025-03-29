@@ -155,11 +155,11 @@ const CourseTable = ({
                 </div>
 
                 {isLoading || isFetching ? (
-                    <div className="min-h-screen flex items-center justify-center bg-white">
+                    <div className="h-44 flex items-end justify-center bg-gray-50">
                         <span className="loading loading-spinner loading-lg"></span>
                     </div>
                 ) : isError ? (
-                    <div className="min-h-screen bg-white">
+                    <div className="min-h-screen bg-gray-50 ">
                         <div className="text-center text-red-600">
                             {error?.data?.message || "Error fetching courses"}
                         </div>

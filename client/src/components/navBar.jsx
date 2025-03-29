@@ -14,6 +14,7 @@ const Navbar = () => {
     const [logoutApi] = useLogoutMutation();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (
@@ -43,7 +44,7 @@ const Navbar = () => {
     };
 
     return (
-        <div className="flex justify-between items-center px-6 py-3 bg-white shadow-md sticky font-sans">
+        <div className="flex justify-between items-center px-6 py-3 bg-white shadow-md sticky top-0 z-40 font-sans">
             {/* Logo */}
             <img
                 src={logo}
@@ -72,7 +73,7 @@ const Navbar = () => {
 
                     {/* Dropdown Menu */}
                     {dropdownOpen && (
-                        <div className="absolute top-full right-0 mt-3 w-52 bg-white shadow-lg rounded-lg overflow-hidden z-50 border border-gray-200">
+                        <div className="absolute top-full right-0 mt-3 w-52 bg-white shadow-lg rounded-lg overflow-hidden z-100 border border-gray-200">
                             <div className="px-5 py-3 border-b bg-gray-100">
                                 <p className="text-base font-semibold text-gray-700 truncate">
                                     {user?.email}
@@ -99,7 +100,7 @@ const Navbar = () => {
                                     Enrolled Courses
                                 </li>
 
-                                {user?.role == "admin" && (
+                                {user?.role === "admin" && (
                                     <li
                                         className="px-5 py-3 hover:bg-gray-200 cursor-pointer text-sm font-medium transition-all"
                                         onClick={() => {
@@ -129,7 +130,7 @@ const Navbar = () => {
                     />
                     <Button
                         text="Sign Up"
-                        styleContainer=" font-bold text-white px-5 py-2 rounded-md shadow-md transition-all"
+                        styleContainer="font-bold text-white px-5 py-2 rounded-md shadow-md transition-all"
                         onClick={() => navigate("/signup")}
                     />
                 </div>
